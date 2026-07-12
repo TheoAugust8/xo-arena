@@ -1,0 +1,36 @@
+# Flutter and Dart generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# Dart code generation
+*.freezed.dart
+*.g.dart
+
+# FVM local workspace
+.fvm/
+
+# IDE files
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+
+# Platform local configuration
+android/local.properties
+ios/Flutter/ephemeral/
+macos/Flutter/ephemeral/
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# macOS
+.DS_Store
+
+# Superpowers workflow scratch files
+.superpowers/
