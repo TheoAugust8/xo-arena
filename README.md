@@ -43,11 +43,23 @@ Connect a device or start a simulator, then run:
 make run
 ```
 
+## Browse the design system
+
+Run the interactive Widgetbook catalog on a connected device or in a browser:
+
+```sh
+make widgetbook
+```
+
+The catalog exposes semantic color tokens in light and dark modes, typography,
+buttons, game cells, status badges, score, symbol skins, and settings variants.
+
 ## Development commands
 
 ```sh
 make get              # Fetch Dart and Flutter dependencies through FVM
 make run              # Run XO Arena
+make widgetbook       # Run the interactive design system catalog
 make format           # Format Dart files
 make format-check     # Check Dart formatting
 make analyze          # Run static analysis
@@ -68,7 +80,7 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 | Language | Dart 3.12.0 through Flutter |
 | State management and DI | Riverpod 3 with code generation |
 | Navigation | GoRouter |
-| Immutable persisted models | Freezed |
+| Immutable models | Freezed |
 | Local persistence | SharedPreferences |
 | Tests | flutter_test and manual fakes |
 | Code generation | build_runner, riverpod_generator, Freezed, json_serializable |
@@ -102,7 +114,7 @@ lib/
     app.dart                   Application root
     router.dart                Home, Game, and History routes
   core/
-    design_system/             Colors, spacing, and theme
+    design_system/             Tokens, themes, and reusable components
   features/
     home/
       presentation/            Home screen
@@ -131,7 +143,7 @@ test/
 
 `gameHistoryProvider` loads persisted records. After delete or clear operations, History invalidates provider so current local state is loaded again. Mutation controls remain disabled while an operation is pending.
 
-The game controller owns turn orchestration, CPU waiting state, stale asynchronous result protection, and restart behavior. Pure win rules and CPU algorithms remain outside Riverpod.
+The game notifier owns turn orchestration, CPU waiting state, stale asynchronous result protection, completed game persistence, and restart behavior. Pure win rules and CPU algorithms remain outside Riverpod.
 
 ## Persistence
 
@@ -176,9 +188,9 @@ Game coverage:
 * Deterministic choice when scores tie.
 * Interaction lock during CPU work.
 * Restart while CPU result is pending.
-* Board rendering, visible marks, result state, and reset behavior.
+* Board rendering, interaction lock, responsive layout, and reset behavior.
 
-Pure domain tests should form most of test suite. Riverpod controller tests should use `ProviderContainer` overrides. Widget tests should focus on visible behavior and user interaction.
+Pure domain tests form most of the game suite. Riverpod notifier tests use `ProviderContainer` overrides. Widget tests focus on visible behavior and user interaction.
 
 Run full local quality gate with:
 
@@ -200,9 +212,9 @@ Home, Game, and History are distinct destinations. Declarative routes keep navig
 
 SharedPreferences is an external implementation detail. Repository contract keeps domain independent from storage choice, while local data source isolates serialization and mutation ordering.
 
-### Why Freezed is limited to persisted records
+### Why Freezed is used for value state
 
-GameRecord benefits from generated equality, copying, and JSON conversion. Simple types should remain plain Dart when generation adds no clear value.
+GameRecord benefits from generated equality, copying, and JSON conversion. GameRound and GameState benefit from immutable collections, generated equality, and safe state updates. Simple types remain plain Dart when generation adds no clear value.
 
 ### Why deterministic Minimax is target CPU strategy
 

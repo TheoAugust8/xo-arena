@@ -5,13 +5,14 @@ SHELL := /bin/sh
 FVM_VERSION := 3.1.3
 FVM ?= $(shell command -v fvm 2>/dev/null || printf '%s/bin/fvm' "$${PUB_CACHE:-$$HOME/.pub-cache}")
 
-.PHONY: help ensure-fvm install get run format format-check analyze test generate generate-watch clean check
+.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test generate generate-watch clean check
 
 help:
 	@printf '%s\n' 'XO Arena commands:'
 	@printf '%s\n' '  make install        Install FVM if approved, Flutter SDK, generated sources, and dependencies'
 	@printf '%s\n' '  make get            Get Dart dependencies'
 	@printf '%s\n' '  make run            Run the app'
+	@printf '%s\n' '  make widgetbook     Run the design system catalog'
 	@printf '%s\n' '  make format         Format Dart files'
 	@printf '%s\n' '  make format-check   Check Dart formatting'
 	@printf '%s\n' '  make analyze        Run static analysis'
@@ -59,6 +60,10 @@ get: ensure-fvm
 run: ensure-fvm
 	@printf '%s\n' 'Running XO Arena'
 	@$(FVM) flutter run
+
+widgetbook: ensure-fvm
+	@printf '%s\n' 'Running design system catalog'
+	@$(FVM) flutter run -t tool/widgetbook/main.dart
 
 format: ensure-fvm
 	@printf '%s\n' 'Formatting Dart files'
