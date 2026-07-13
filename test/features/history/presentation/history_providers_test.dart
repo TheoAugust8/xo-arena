@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xo_arena/features/history/presentation/history_providers.dart';
 import 'package:xo_arena/shared/game_records/domain/game_record.dart';
+import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
 
 void main() {
   test(
@@ -33,7 +33,7 @@ GameRecord _record(String id) {
     id: id,
     playerOneName: 'X',
     playerTwoName: 'O',
-    winnerName: 'X',
+    outcome: GameOutcome.playerOneWin,
     moveCount: 7,
     completedAt: DateTime.utc(2026, 7, 12),
   );

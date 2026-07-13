@@ -82,7 +82,7 @@ GameRecord _record({required String id, DateTime? completedAt}) {
     id: id,
     playerOneName: 'X',
     playerTwoName: 'O',
-    winnerName: 'X',
+    outcome: GameOutcome.playerOneWin,
     moveCount: 7,
     completedAt: completedAt ?? DateTime.utc(2026, 7, 12),
   );

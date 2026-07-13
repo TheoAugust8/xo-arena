@@ -1,4 +1,4 @@
-import 'game_record.dart';
+import 'package:xo_arena/shared/game_records/domain/game_record.dart';
 
 abstract interface class GameRecordRepository {
   Future<List<GameRecord>> getAll();

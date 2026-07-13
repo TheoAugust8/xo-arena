@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:xo_arena/shared/game_records/domain/game_record.dart';
 
-import '../../../core/design_system/app_spacing.dart';
-import 'history_providers.dart';
+import 'package:xo_arena/core/design_system/app_spacing.dart';
+import 'package:xo_arena/features/history/presentation/history_providers.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -94,7 +94,7 @@ class _HistoryList extends StatelessWidget {
     final localizations = MaterialLocalizations.of(context);
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.large),
+      padding: const EdgeInsets.all(AppSpacing.space16),
       children: [
         Align(
           alignment: Alignment.centerRight,
@@ -105,13 +105,16 @@ class _HistoryList extends StatelessWidget {
             label: const Text('Clear history'),
           ),
         ),
-        const SizedBox(height: AppSpacing.small),
+        const SizedBox(height: AppSpacing.space8),
         for (final record in records)
           Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.small),
+            padding: const EdgeInsets.only(bottom: AppSpacing.space8),
             child: Card(
               child: ListTile(
-                title: Text('${record.winnerName} won'),
+                title: Text(switch (record.winnerName) {
+                  final winnerName? => '$winnerName won',
+                  null => 'Draw',
+                }),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -149,17 +152,17 @@ class _EmptyHistory extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.large),
+        padding: const EdgeInsets.all(AppSpacing.space16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.history_rounded, size: 48),
-            const SizedBox(height: AppSpacing.medium),
+            const SizedBox(height: AppSpacing.space12),
             Text(
               'No completed games yet.',
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: AppSpacing.large),
+            const SizedBox(height: AppSpacing.space16),
             TextButton(onPressed: onBack, child: const Text('Back')),
           ],
         ),

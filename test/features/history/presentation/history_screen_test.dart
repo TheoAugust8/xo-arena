@@ -43,14 +43,14 @@ void main() {
     await repository.save(
       _record(
         id: 'older',
-        winnerName: 'Older winner',
+        playerOneName: 'Older winner',
         completedAt: DateTime.utc(2026, 7, 11),
       ),
     );
     await repository.save(
       _record(
         id: 'newer',
-        winnerName: 'Newer winner',
+        playerOneName: 'Newer winner',
         completedAt: DateTime.utc(2026, 7, 12),
       ),
     );
@@ -65,9 +65,19 @@ void main() {
     );
   });
 
+  testWidgets('shows a draw without claiming a winner', (tester) async {
+    final repository = InMemoryGameRecordRepository();
+    await repository.save(_record(id: 'draw', outcome: GameOutcome.draw));
+
+    await _pumpHistory(tester, repository);
+
+    expect(find.text('Draw'), findsOneWidget);
+    expect(find.text('Draw won'), findsNothing);
+  });
+
   testWidgets('deletes an individual completed game', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(_record(id: 'game-1', winnerName: 'Alex'));
+    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
 
     await _pumpHistory(tester, repository);
     await tester.tap(find.byKey(const Key('delete-game-1')));
@@ -79,8 +89,8 @@ void main() {
 
   testWidgets('clears all completed games', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(_record(id: 'game-1', winnerName: 'Alex'));
-    await repository.save(_record(id: 'game-2', winnerName: 'Bailey'));
+    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-2', playerOneName: 'Bailey'));
 
     await _pumpHistory(tester, repository);
     await tester.tap(find.byKey(const Key('clear-history')));
@@ -94,7 +104,7 @@ void main() {
     tester,
   ) async {
     final repository = PendingDeleteGameRecordRepository();
-    await repository.save(_record(id: 'game-1', winnerName: 'Alex'));
+    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
 
     await _pumpHistory(tester, repository);
     await tester.tap(find.byKey(const Key('delete-game-1')));
@@ -181,14 +191,15 @@ class PendingDeleteGameRecordRepository extends InMemoryGameRecordRepository {
 
 GameRecord _record({
   required String id,
-  required String winnerName,
+  String playerOneName = 'Alex',
+  GameOutcome outcome = GameOutcome.playerOneWin,
   DateTime? completedAt,
 }) {
   return GameRecord(
     id: id,
-    playerOneName: 'Alex',
+    playerOneName: playerOneName,
     playerTwoName: 'Bailey',
-    winnerName: winnerName,
+    outcome: outcome,
     moveCount: 7,
     completedAt: completedAt ?? DateTime.utc(2026, 7, 12),
   );
