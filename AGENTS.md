@@ -35,13 +35,14 @@ Before handing off code, run targeted tests during development, then `make check
 Repository currently contains:
 
 * Home, Game, and History routes using GoRouter.
-* Minimal design tokens in `lib/core/design_system`.
-* SharedPreferences backed game history behind data source and repository contracts.
-* Riverpod composition for asynchronous history state.
-* Unit and widget tests around existing history, navigation, and persistence behavior.
-* Temporary Home and Game content. Core tic tac toe domain, CPU strategy, and playable board remain product work.
+* Immutable Board and Game domain models with pure win and draw evaluation.
+* Easy, Medium, and deterministic Minimax CPU strategies.
+* Riverpod orchestration with input locking, restart invalidation, and completed game persistence.
+* SharedPreferences backed game history and application settings behind repository contracts.
+* Responsive, accessible Home, Game, History, and Settings experiences with reduced motion support.
+* Unit, controller, widget, architecture, and golden tests covering core behavior and visual states.
 
-Do not describe placeholder behavior as complete functionality.
+Keep this section and `README.md` aligned with shipped behavior and documented limitations.
 
 ## Product scope
 

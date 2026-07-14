@@ -59,7 +59,7 @@ make widgetbook
 ```
 
 The catalog exposes semantic color tokens in light and dark modes, typography,
-buttons, game cells, status badges, score, symbol skins, and settings variants.
+game cells, status badges, score, symbol skins, and settings variants.
 
 ## Development commands
 
@@ -109,9 +109,9 @@ App composition -> Presentation + Domain + Data
 Dependency rules:
 
 * Domain stays independent from Flutter, Riverpod, GoRouter, and SharedPreferences.
-* Use cases and repository contracts live in Domain.
-* Domain sources are grouped by responsibility into entities, repositories, services, and use cases.
-* Presentation depends on domain concepts, use cases, and public providers.
+* Repository contracts and business use cases live in Domain.
+* Domain sources are grouped by responsibility into entities, repositories, services, and use cases where business rules require them.
+* Presentation depends on domain concepts, useful use cases, and public providers.
 * Data implements contracts owned by domain.
 * Features do not import another feature. Shared boundaries carry cross feature concepts.
 * Shared code exists only when several features genuinely depend on same concept.
@@ -142,8 +142,6 @@ lib/
         audio/                 Audioplayers implementation
       presentation/            Game screen
     history/
-      domain/
-        usecases/              Delete and clear history
       presentation/            History screen and Riverpod composition
     launch/
       presentation/            Startup gate and animated launch screen
@@ -158,6 +156,7 @@ lib/
         entities/              Persisted application settings
         repositories/          Settings repository contract
       data/
+        models/                Generated JSON DTO and domain mapping
         datasources/           SharedPreferences access
         repositories/          Settings repository implementation
       presentation/            Riverpod state and shared settings UI
@@ -165,7 +164,6 @@ lib/
       domain/
         entities/              Records and statistics
         repositories/          Game record repository contract
-        usecases/              Shared record queries
       data/
         models/                JSON DTO and domain mapping
         datasources/           SharedPreferences access
@@ -194,6 +192,8 @@ The game notifier owns turn orchestration, CPU waiting state, stale asynchronous
 ## Persistence
 
 `GameRecord` is a pure immutable Freezed domain model. `GameRecordDto` lives in Data and owns JSON conversion plus mapping to and from Domain. Records capture difficulty and symbol style snapshots while preserving the existing stored keys, enum names, and ISO 8601 dates.
+
+`AppSettingsDto` applies the same generated JSON boundary to settings while `AppSettings` remains a storage independent domain value.
 
 `GameRecordRepository` belongs to domain. `GameRecordRepositoryImpl` delegates to `GameRecordLocalDataSource`, while `SharedPreferencesGameRecordLocalDataSource` owns storage format and local mutations.
 
@@ -230,11 +230,11 @@ Current tests cover:
 * Home statistics, shared settings, and premium actions.
 * History loading, empty state, delete, clear, and mutation locking.
 * History summaries, metadata, retry, and mutation failure feedback.
-* History use cases and repository delegation.
+* History repository integration and reentrant mutation protection.
 * GameRecord equality and copying plus GameRecordDto wire compatibility.
 * Targeted record corruption, SharedPreferences write failures, serialization, and queue recovery.
 * Completed game persistence use case.
-* Preference defaults, restoration, corruption fallback, and ordered writes.
+* Preference defaults, generated JSON mapping, restoration, corruption fallback, no op updates, and ordered writes.
 * Sound synthesis, transition cue mapping, mute persistence, and Game integration.
 * Game record metadata validation and shared statistics.
 * Launch timing, reduced motion behavior, and launch semantics.
@@ -290,7 +290,7 @@ TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays c
 
 ### Why Freezed is used for value state
 
-GameRecord benefits from generated equality and copying while JSON stays in its Data DTO. GameState uses generated value equality. Board and Game stay small explicit value types with defensive collection copying and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
+GameRecord and GameRecordStats benefit from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. Board and Game stay small explicit value types with defensive collection copying and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
 
 ### Why deterministic Minimax is target CPU strategy
 
