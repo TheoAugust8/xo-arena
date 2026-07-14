@@ -13,8 +13,14 @@ Core target:
 * Locked interaction while CPU is choosing a move.
 * Accessible cell semantics and touch targets.
 * Persisted completed game history.
+* Persisted difficulty, symbol style, and theme preferences.
+* Six vector symbol skins: Classic, Geometric, Tennis, Football, Poker, and Basketball.
+* Responsive premium Home, Game, and History experiences.
+* Short functional motion with reduced motion support.
+* Synthesized gameplay sound cues with a persisted mute control.
+* Branded native startup, animated launch sequence, and platform icons.
 
-The product keeps its experience focused on a single game flow, with optional first player selection, difficulty levels, small functional animations, discreet haptics, and golden tests.
+The product keeps its experience focused on a single game flow. It does not currently include first player selection, haptics, online play, or golden test infrastructure.
 
 ## Prerequisites
 
@@ -82,6 +88,7 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 | Navigation | GoRouter |
 | Immutable models | Freezed |
 | Local persistence | SharedPreferences |
+| Sound playback | audioplayers |
 | Tests | flutter_test and manual fakes |
 | Code generation | build_runner, riverpod_generator, Freezed, json_serializable |
 | Toolchain | FVM and Make |
@@ -92,19 +99,23 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 Project uses pragmatic Clean Architecture with feature first organization.
 
 ```text
-Presentation -> Use cases -> Domain contracts <- Data
+Presentation -> Domain <- Data
+App composition -> Presentation + Domain + Data
 ```
 
 Dependency rules:
 
 * Domain stays independent from Flutter, Riverpod, GoRouter, and SharedPreferences.
+* Use cases and repository contracts live in Domain.
+* Domain sources are grouped by responsibility into entities, repositories, services, and use cases.
 * Presentation depends on domain concepts, use cases, and public providers.
 * Data implements contracts owned by domain.
 * Features do not import another feature's presentation or internal implementation.
 * Shared code exists only when several features genuinely depend on same concept.
+* App composition is the only place that instantiates concrete data and audio dependencies.
 * Abstractions belong at useful boundaries, not around every class.
 
-Riverpod acts as composition layer. Generated providers wire dependencies and expose asynchronous UI state without introducing framework dependencies into domain code.
+Riverpod exposes presentation state and dependency ports. `app/di` supplies concrete repository and audio implementations at the application root without introducing framework dependencies into domain code.
 
 ## Folder structure
 
@@ -112,6 +123,7 @@ Riverpod acts as composition layer. Generated providers wire dependencies and ex
 lib/
   app/
     app.dart                   Application root
+    di/                        Concrete dependency composition
     router.dart                Home, Game, and History routes
   core/
     design_system/             Tokens, themes, and reusable components
@@ -119,20 +131,47 @@ lib/
     home/
       presentation/            Home screen
     game/
+      domain/
+        entities/              Immutable game round
+        services/              Pure rules, CPU strategies, and audio port
+        usecases/              Completed game persistence
+      data/
+        audio/                 Audioplayers implementation
       presentation/            Game screen
-      usecases/                Completed game persistence use case
     history/
+      domain/
+        usecases/              Delete and clear history
       presentation/            History screen and Riverpod composition
-      usecases/                Read, delete, and clear history
+    launch/
+      presentation/            Startup gate and animated launch screen
   shared/
+    game_configuration/
+      domain/entities/         Shared difficulty type
+    game_symbols/
+      domain/entities/         Shared symbol skin type
+      presentation/            Shared symbol rendering
+    settings/
+      domain/
+        entities/              Persisted application settings
+        repositories/          Settings repository contract
+      data/
+        datasources/           SharedPreferences access
+        repositories/          Settings repository implementation
+      presentation/            Riverpod state and shared settings UI
     game_records/
-      domain/                  GameRecord and repository contract
+      domain/
+        entities/              Records and statistics
+        repositories/          Game record repository contract
+        usecases/              Shared record queries
       data/
         datasources/           SharedPreferences access
         repositories/          Repository implementation
+tool/
+  game_sound_synthesizer.dart  Development asset generator
 test/
-  features/                    Feature widget and use case tests
-  shared/                      Domain and data tests
+  architecture/                Enforced dependency rules
+  features/                    Feature domain, data, and widget tests
+  shared/                      Shared domain, data, and presentation tests
 ```
 
 `shared/game_records` is a small shared boundary. Game can write completed records, History reads and manages them, and neither feature depends on another feature's presentation code.
@@ -141,17 +180,19 @@ test/
 
 [Riverpod](https://riverpod.dev/) manages dependency composition and asynchronous History state.
 
-`gameHistoryProvider` loads persisted records. After delete or clear operations, History invalidates provider so current local state is loaded again. Mutation controls remain disabled while an operation is pending.
+`gameRecordsProvider` loads persisted records for Home statistics and History. After delete or clear operations, History invalidates provider so current local state is loaded again. Mutation controls remain disabled while an operation is pending.
+
+`settingsProvider` exposes System theme, Hard difficulty, Classic skin, and enabled sound defaults immediately, restores stored choices asynchronously, and serializes writes. Home and Game share one settings state without importing `app` or each other's presentation code.
 
 The game notifier owns turn orchestration, CPU waiting state, stale asynchronous result protection, completed game persistence, and restart behavior. Pure win rules and CPU algorithms remain outside Riverpod.
 
 ## Persistence
 
-`GameRecord` is immutable Freezed model. Freezed provides value equality and `copyWith`; json_serializable provides JSON conversion.
+`GameRecord` is immutable Freezed model. Freezed provides value equality and `copyWith`; json_serializable provides JSON conversion. Records capture difficulty and symbol style snapshots.
 
 `GameRecordRepository` belongs to domain. `GameRecordRepositoryImpl` delegates to `GameRecordLocalDataSource`, while `SharedPreferencesGameRecordLocalDataSource` owns storage format and local mutations.
 
-Local data source serializes write operations. Concurrent save, delete, and clear calls cannot overwrite each other through overlapping read and write cycles.
+Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles.
 
 ## Navigation
 
@@ -165,17 +206,34 @@ Local data source serializes write operations. Concurrent save, delete, and clea
 
 Three explicit destinations keep navigation simple while allowing each flow to evolve independently.
 
+Routes use short fade and slide transitions. Flutter's reduced motion signal disables movement while preserving immediate navigation and state changes. Leaving Game disposes its auto dispose notifier, cancels pending CPU work, and ensures the next Game entry starts a fresh session.
+
+## Sound design
+
+Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game domain owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool`. Domain rules and controller orchestration remain independent from audio playback details.
+
+Sound is enabled by default and can be muted from Settings. The choice persists with other game preferences. iOS playback uses the ambient audio category, respecting the Ring and Silent switch and mixing without interrupting other audio.
+
+The platform launch screens use the active light or dark brand background to avoid a white frame while Flutter initializes. Flutter then shows the rounded badge, sequential X and O drawing, title reveal, tagline, and progress indicator. Reduced motion skips the sequence and exposes Home immediately. The same deterministic logo geometry produces the iOS, Android, macOS, and Web icons.
+
 ## Testing strategy
 
 Current tests cover:
 
 * Application startup and routes.
 * Home navigation.
+* Home statistics, shared settings, and premium actions.
 * History loading, empty state, delete, clear, and mutation locking.
+* History summaries, metadata, retry, and mutation failure feedback.
 * History use cases and repository delegation.
 * GameRecord equality, copying, and JSON conversion.
 * SharedPreferences serialization and concurrent mutations.
 * Completed game persistence use case.
+* Preference defaults, restoration, corruption fallback, and ordered writes.
+* Sound synthesis, transition cue mapping, mute persistence, and Game integration.
+* Game record metadata validation and shared statistics.
+* Launch timing, reduced motion behavior, and launch semantics.
+* Architecture dependency rules between App, Core, Presentation, Domain, and Data.
 
 Game coverage:
 
@@ -211,6 +269,16 @@ Home, Game, and History are distinct destinations. Declarative routes keep navig
 ### Why repository around local persistence
 
 SharedPreferences is an external implementation detail. Repository contract keeps domain independent from storage choice, while local data source isolates serialization and mutation ordering.
+
+Settings use a domain repository because presentation must stay independent from SharedPreferences. `SettingsRepositoryImpl` delegates to a local data source, while `app/di` owns concrete construction.
+
+### Why settings are shared
+
+Home selects difficulty, Game consumes it, and History displays completed match snapshots. A small shared boundary gives all three features stable domain types and Riverpod composition without cross feature presentation imports.
+
+### Why motion uses Flutter primitives
+
+TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays cover current motion needs. This keeps motion short, testable, dependency free, and compatible with reduced motion settings.
 
 ### Why Freezed is used for value state
 
