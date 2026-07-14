@@ -50,6 +50,27 @@ Connect a device or start a simulator, then run:
 make run
 ```
 
+## Deploy web
+
+XO Arena uses Firebase Hosting. GitHub Actions builds every pull request to
+`main` and posts a Firebase preview URL. A push to `main` deploys production.
+
+Before first deployment, configure these GitHub repository values:
+
+* `FIREBASE_PROJECT_ID` variable: `xo-arena-web-20260714`.
+* `FIREBASE_SERVICE_ACCOUNT_XO_ARENA` secret: JSON key for a service account
+  with Firebase Hosting Admin permission.
+
+For a manual production deployment, install Firebase CLI, build web release,
+then run:
+
+```sh
+firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID"
+```
+
+`firebase.json` deploys `build/web` and rewrites unknown paths to
+`index.html`, preserving direct links to application routes.
+
 ## Browse the design system
 
 Run the interactive Widgetbook catalog on a connected device or in a browser:
