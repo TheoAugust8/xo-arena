@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,24 @@ import 'package:xo_arena/core/design_system/app_theme.dart';
 
 const goldenSurfaceKey = ValueKey('golden_surface');
 const goldenSurfaceSize = Size(390, 844);
+
+Uri _platformGoldenFile(Uri golden) {
+  final platformDirectory = switch (Platform.operatingSystem) {
+    'linux' => 'linux',
+    'macos' => 'macos',
+    final operatingSystem => throw UnsupportedError(
+      'Golden baselines are unavailable for $operatingSystem.',
+    ),
+  };
+  final segments = golden.pathSegments;
+  return golden.replace(
+    path: [
+      ...segments.take(segments.length - 1),
+      platformDirectory,
+      segments.last,
+    ].join('/'),
+  );
+}
 
 Future<void> loadGoldenFonts() async {
   final inter = FontLoader('Inter')
@@ -69,9 +89,10 @@ final class TolerantGoldenFileComparator extends LocalFileComparator {
 
   @override
   Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final platformGolden = _platformGoldenFile(golden);
     final result = await GoldenFileComparator.compareLists(
       imageBytes,
-      await getGoldenBytes(golden),
+      await getGoldenBytes(platformGolden),
     );
     final passed = result.passed || result.diffPercent <= _precisionTolerance;
     if (passed) {
@@ -79,8 +100,13 @@ final class TolerantGoldenFileComparator extends LocalFileComparator {
       return true;
     }
 
-    final error = await generateFailureOutput(result, golden, basedir);
+    final error = await generateFailureOutput(result, platformGolden, basedir);
     result.dispose();
     throw FlutterError(error);
+  }
+
+  @override
+  Future<void> update(Uri golden, Uint8List imageBytes) {
+    return super.update(_platformGoldenFile(golden), imageBytes);
   }
 }
