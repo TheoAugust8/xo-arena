@@ -45,8 +45,10 @@ class SettingsNotifier extends _$SettingsNotifier {
   Future<void> _update(AppSettings Function(AppSettings) update) async {
     await _restoration;
     if (!ref.mounted) return;
-    state = update(state);
-    await _enqueuePersistence(state);
+    final next = update(state);
+    if (next == state) return;
+    state = next;
+    await _enqueuePersistence(next);
   }
 
   Future<void> _restore() async {

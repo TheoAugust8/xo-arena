@@ -75,6 +75,18 @@ void main() {
     expect(repository.value, container.read(settingsProvider));
   });
 
+  test('skips persistence when settings stay unchanged', () async {
+    final repository = _RecordingSettingsRepository();
+    final container = _container(repository);
+    addTearDown(container.dispose);
+
+    await container
+        .read(settingsProvider.notifier)
+        .setDifficulty(AppSettings.defaults.difficulty);
+
+    expect(repository.saved, isEmpty);
+  });
+
   test(
     'preserves restored fields when selection happens during load',
     () async {
@@ -154,6 +166,18 @@ final class _OrderedSettingsRepository extends _MemorySettingsRepository {
   }
 
   void releaseFirstWrite() => _release.complete();
+}
+
+final class _RecordingSettingsRepository extends _MemorySettingsRepository {
+  _RecordingSettingsRepository() : super(AppSettings.defaults);
+
+  final saved = <AppSettings>[];
+
+  @override
+  Future<void> save(AppSettings settings) async {
+    saved.add(settings);
+    await super.save(settings);
+  }
 }
 
 final class _PendingLoadSettingsRepository implements SettingsRepository {

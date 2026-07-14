@@ -2,8 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
-import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
+import 'package:xo_arena/shared/settings/data/models/app_settings_dto.dart';
 import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
 
 abstract interface class SettingsLocalDataSource {
@@ -27,12 +26,7 @@ final class SharedPreferencesSettingsLocalDataSource
 
     try {
       final json = jsonDecode(encoded) as Map<String, dynamic>;
-      return AppSettings(
-        theme: AppThemePreference.values.byName(json['theme'] as String),
-        difficulty: GameDifficulty.values.byName(json['difficulty'] as String),
-        skin: GameSymbolSkin.values.byName(json['skin'] as String),
-        soundEnabled: json['soundEnabled'] as bool,
-      );
+      return AppSettingsDto.fromJson(json).toDomain();
     } on Object {
       return AppSettings.defaults;
     }
@@ -42,12 +36,7 @@ final class SharedPreferencesSettingsLocalDataSource
   Future<void> save(AppSettings settings) async {
     final saved = await _preferences.setString(
       settingsKey,
-      jsonEncode({
-        'theme': settings.theme.name,
-        'difficulty': settings.difficulty.name,
-        'skin': settings.skin.name,
-        'soundEnabled': settings.soundEnabled,
-      }),
+      jsonEncode(AppSettingsDto.fromDomain(settings).toJson()),
     );
     if (!saved) {
       throw StateError('Unable to persist app settings.');
