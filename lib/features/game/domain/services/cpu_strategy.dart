@@ -1,7 +1,8 @@
 import 'dart:math';
 
-import 'package:xo_arena/features/game/domain/game_round.dart';
-import 'package:xo_arena/features/game/domain/game_rules.dart';
+import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/services/game_rules.dart';
+import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 
 abstract interface class CpuStrategy {
   int chooseMove(List<GameMark?> cells);

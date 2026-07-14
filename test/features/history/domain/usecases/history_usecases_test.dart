@@ -1,19 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/history/usecases/clear_history.dart';
-import 'package:xo_arena/features/history/usecases/delete_game_record.dart';
-import 'package:xo_arena/features/history/usecases/get_history.dart';
-import 'package:xo_arena/shared/game_records/domain/game_record.dart';
-import 'package:xo_arena/shared/game_records/domain/game_record_repository.dart';
+import 'package:xo_arena/features/history/domain/usecases/clear_history.dart';
+import 'package:xo_arena/features/history/domain/usecases/delete_game_record.dart';
+import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
+import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
+import 'package:xo_arena/shared/game_records/domain/repositories/game_record_repository.dart';
+import 'package:xo_arena/shared/game_records/domain/usecases/get_game_records.dart';
+import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 
 void main() {
   late InMemoryGameRecordRepository repository;
-  late GetHistoryUseCase getHistory;
+  late GetGameRecordsUseCase getHistory;
   late DeleteGameRecordUseCase deleteGameRecord;
   late ClearHistoryUseCase clearHistory;
 
   setUp(() {
     repository = InMemoryGameRecordRepository();
-    getHistory = GetHistoryUseCase(repository);
+    getHistory = GetGameRecordsUseCase(repository);
     deleteGameRecord = DeleteGameRecordUseCase(repository);
     clearHistory = ClearHistoryUseCase(repository);
   });
@@ -75,5 +77,7 @@ GameRecord _record({required String id}) {
     outcome: GameOutcome.playerOneWin,
     moveCount: 7,
     completedAt: DateTime.utc(2026, 7, 12),
+    difficulty: GameDifficulty.hard,
+    skin: GameSymbolSkin.classic,
   );
 }

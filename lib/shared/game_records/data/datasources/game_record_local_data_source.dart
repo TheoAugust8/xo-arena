@@ -1,4 +1,4 @@
-import 'package:xo_arena/shared/game_records/domain/game_record.dart';
+import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 
 abstract interface class GameRecordLocalDataSource {
   Future<List<GameRecord>> getAll();

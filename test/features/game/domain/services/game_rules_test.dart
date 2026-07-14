@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/game_rules.dart';
-import 'package:xo_arena/features/game/domain/game_round.dart';
+import 'package:xo_arena/features/game/domain/services/game_rules.dart';
+import 'package:xo_arena/features/game/domain/entities/game_round.dart';
 
 void main() {
   group('evaluate', () {

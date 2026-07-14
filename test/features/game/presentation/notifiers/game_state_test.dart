@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/game_round.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
 
 void main() {

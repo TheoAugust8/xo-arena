@@ -2,26 +2,27 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:xo_arena/features/game/domain/cpu_strategy.dart';
-import 'package:xo_arena/features/game/domain/game_rules.dart';
-import 'package:xo_arena/features/game/domain/game_round.dart';
-import 'package:xo_arena/features/game/presentation/models/game_symbol_skin.dart';
+import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
+import 'package:xo_arena/features/game/domain/services/game_rules.dart';
+import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/usecases/complete_game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
-import 'package:xo_arena/features/game/usecases/complete_game.dart';
-import 'package:xo_arena/shared/game_records/domain/game_record.dart';
+import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
+import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
 
 part 'game_notifier.g.dart';
 
 @riverpod
-Duration cpuTurnDelay(Ref ref) => const Duration(milliseconds: 400);
+Duration cpuTurnDelay(Ref ref) => const Duration(milliseconds: 900);
 
 @Riverpod(keepAlive: true)
 CompleteGameUseCase completeGameUseCase(Ref ref) {
   return CompleteGameUseCase(ref.read(gameRecordRepositoryProvider));
 }
 
-@Riverpod(keepAlive: true)
+@riverpod
 class GameNotifier extends _$GameNotifier {
   var _generation = 0;
   Timer? _cpuTimer;
@@ -68,12 +69,14 @@ class GameNotifier extends _$GameNotifier {
     );
   }
 
-  void setDifficulty(GameDifficulty value) {
-    state = state.copyWith(difficulty: value);
-    restart();
+  Future<void> setDifficulty(GameDifficulty value) {
+    return ref.read(settingsProvider.notifier).setDifficulty(value);
   }
 
-  void setSkin(GameSymbolSkin value) => state = state.copyWith(skin: value);
+  Future<void> setSkin(GameSymbolSkin value) {
+    return ref.read(settingsProvider.notifier).setSkin(value);
+  }
+
   void _scheduleCpu() {
     final generation = ++_generation;
     state = state.copyWith(isCpuThinking: true);
@@ -81,7 +84,7 @@ class GameNotifier extends _$GameNotifier {
     _cpuTimer = Timer(ref.read(cpuTurnDelayProvider), () {
       if (generation != _generation || state.round.isComplete) return;
       final move = CpuStrategyFactory.forDifficulty(
-        state.difficulty,
+        ref.read(settingsProvider).difficulty,
       ).chooseMove(state.round.cells);
       final next = GameRules.applyMove(state.round, move, GameMark.cpu);
       state = state.copyWith(
@@ -98,31 +101,26 @@ class GameNotifier extends _$GameNotifier {
   }
 
   void _saveCompletedRound(GameRound round) {
+    final generation = _generation;
     unawaited(
-      _persistCompletedRound(round).onError((_, _) {
-        state = state.copyWith(historySaveFailed: true);
-      }),
+      _persistCompletedRound(round)
+          .then((_) {
+            if (!ref.mounted) return;
+            ref.invalidate(gameRecordsProvider);
+          })
+          .onError((_, _) {
+            if (!ref.mounted || generation != _generation) return;
+            state = state.copyWith(historySaveFailed: true);
+          }),
     );
   }
 
   Future<void> _persistCompletedRound(GameRound round) {
-    final completedAt = DateTime.now();
-    final outcome = switch (round.status) {
-      GameStatus.playerWon => GameOutcome.playerOneWin,
-      GameStatus.cpuWon => GameOutcome.playerTwoWin,
-      GameStatus.draw => GameOutcome.draw,
-      GameStatus.active => throw StateError(
-        'Only completed rounds can persist.',
-      ),
-    };
-    final record = GameRecord(
-      id: completedAt.microsecondsSinceEpoch.toString(),
-      playerOneName: 'You',
-      playerTwoName: 'CPU',
-      outcome: outcome,
-      moveCount: round.cells.whereType<GameMark>().length,
-      completedAt: completedAt,
+    final settings = ref.read(settingsProvider);
+    return ref.read(completeGameUseCaseProvider)(
+      round: round,
+      difficulty: settings.difficulty,
+      skin: settings.skin,
     );
-    return ref.read(completeGameUseCaseProvider)(record);
   }
 }

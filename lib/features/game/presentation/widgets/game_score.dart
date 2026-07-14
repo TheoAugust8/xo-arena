@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:xo_arena/core/design_system/app_radius.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
-import 'package:xo_arena/features/game/presentation/models/game_symbol_skin.dart';
-import 'package:xo_arena/features/game/presentation/widgets/game_symbol.dart';
+import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
+import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 
 class GameScore extends StatelessWidget {
   const GameScore({
@@ -109,8 +109,46 @@ class _ScoreSide extends StatelessWidget {
           children: labelFirst ? header.reversed.toList() : header,
         ),
         const SizedBox(height: AppSpacing.space8),
-        Text('$value', style: Theme.of(context).textTheme.displayMedium),
+        _AnimatedScoreValue(value: value),
       ],
+    );
+  }
+}
+
+class _AnimatedScoreValue extends StatelessWidget {
+  const _AnimatedScoreValue({required this.value});
+
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 220);
+    final score = Text(
+      '$value',
+      style: Theme.of(context).textTheme.displayMedium,
+    );
+
+    return AnimatedSwitcher(
+      duration: duration,
+      reverseDuration: duration,
+      switchInCurve: Curves.easeOutBack,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.4, end: 1).animate(animation),
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, -0.2),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+      ),
+      child: KeyedSubtree(key: ValueKey(value), child: score),
     );
   }
 }
@@ -136,13 +174,12 @@ class _SymbolTile extends StatelessWidget {
         dimension: 28,
         child: Center(
           child: isPlayer
-              ? const Text(
-                  'X',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'Barlow Condensed',
-                    fontWeight: FontWeight.w900,
+              ? ColorFiltered(
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
                   ),
+                  child: GameSymbol(mark: mark, skin: skin, size: 14),
                 )
               : GameSymbol(mark: mark, skin: skin, size: 14),
         ),

@@ -62,8 +62,8 @@ void main() {
       containsAll([
         'Dark hard classic',
         'Light easy geometric',
-        'Dark medium power',
-        'Light hard nature',
+        'Dark medium tennis',
+        'Light hard football',
       ]),
     );
   });

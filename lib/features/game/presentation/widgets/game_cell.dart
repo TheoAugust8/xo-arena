@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:xo_arena/core/design_system/app_radius.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
-import 'package:xo_arena/features/game/presentation/models/game_symbol_skin.dart';
-import 'package:xo_arena/features/game/presentation/widgets/game_symbol.dart';
+import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
+import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 
 enum GameCellVariant { empty, playerX, cpuO, pressed, disabled, winning }
 
@@ -54,6 +54,8 @@ class GameCell extends StatelessWidget {
       button: true,
       enabled: enabled,
       label: resolvedMark?.name.toUpperCase() ?? 'Empty cell',
+      onTap: enabled ? onPressed : null,
+      excludeSemantics: true,
       child: Opacity(
         opacity: variant == GameCellVariant.disabled ? 0.38 : 1,
         child: SizedBox.square(
@@ -83,9 +85,24 @@ class GameCell extends StatelessWidget {
               child: InkWell(
                 onTap: enabled ? onPressed : null,
                 child: Center(
-                  child: resolvedMark == null
-                      ? null
-                      : GameSymbol(mark: resolvedMark, skin: skin, size: 48),
+                  child: AnimatedSwitcher(
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 220),
+                    switchInCurve: Curves.easeOutBack,
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: FadeTransition(opacity: animation, child: child),
+                    ),
+                    child: resolvedMark == null
+                        ? const SizedBox.shrink(key: ValueKey('empty'))
+                        : GameSymbol(
+                            key: ValueKey('${resolvedMark.name}-${skin.name}'),
+                            mark: resolvedMark,
+                            skin: skin,
+                            size: 48,
+                          ),
+                  ),
                 ),
               ),
             ),

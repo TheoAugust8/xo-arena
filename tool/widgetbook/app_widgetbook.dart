@@ -5,13 +5,15 @@ import 'package:xo_arena/core/design_system/app_radius.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_button.dart';
-import 'package:xo_arena/features/game/domain/game_round.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
-import 'package:xo_arena/features/game/presentation/models/game_symbol_skin.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
-import 'package:xo_arena/features/game/presentation/widgets/game_settings_sheet.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_status_badge.dart';
-import 'package:xo_arena/features/game/presentation/widgets/game_symbol.dart';
+import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
+import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
+import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
+import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
+import 'package:xo_arena/shared/settings/presentation/widgets/settings_sheet.dart';
 
 final List<WidgetbookNode> appWidgetbookDirectories = [
   WidgetbookFolder(
@@ -159,27 +161,27 @@ final List<WidgetbookNode> appWidgetbookDirectories = [
         useCases: [
           _settingsUseCase(
             'Dark hard classic',
-            ThemeMode.dark,
+            AppThemePreference.dark,
             GameDifficulty.hard,
             GameSymbolSkin.classic,
           ),
           _settingsUseCase(
             'Light easy geometric',
-            ThemeMode.light,
+            AppThemePreference.light,
             GameDifficulty.easy,
             GameSymbolSkin.geometric,
           ),
           _settingsUseCase(
-            'Dark medium power',
-            ThemeMode.dark,
+            'Dark medium tennis',
+            AppThemePreference.dark,
             GameDifficulty.medium,
-            GameSymbolSkin.power,
+            GameSymbolSkin.tennis,
           ),
           _settingsUseCase(
-            'Light hard nature',
-            ThemeMode.light,
+            'Light hard football',
+            AppThemePreference.light,
             GameDifficulty.hard,
-            GameSymbolSkin.nature,
+            GameSymbolSkin.football,
           ),
         ],
       ),
@@ -189,7 +191,7 @@ final List<WidgetbookNode> appWidgetbookDirectories = [
 
 WidgetbookUseCase _settingsUseCase(
   String name,
-  ThemeMode themeMode,
+  AppThemePreference theme,
   GameDifficulty difficulty,
   GameSymbolSkin skin,
 ) {
@@ -197,13 +199,14 @@ WidgetbookUseCase _settingsUseCase(
     name: name,
     builder: (_) => SizedBox(
       width: 420,
-      child: GameSettingsSheet(
-        themeMode: themeMode,
-        difficulty: difficulty,
-        skin: skin,
-        onThemeModeChanged: (_) {},
-        onDifficultyChanged: (_) {},
-        onSkinChanged: (_) {},
+      child: SettingsSheet(
+        theme: theme,
+        settings: AppSettings(difficulty: difficulty, skin: skin),
+        onThemeChanged: (_) async {},
+        onDifficultyChanged: (_) async {},
+        onSkinChanged: (_) async {},
+        onSoundEnabledChanged: (_) async {},
+        onClose: () {},
       ),
     ),
   );

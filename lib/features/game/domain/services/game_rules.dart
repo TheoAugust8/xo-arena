@@ -1,4 +1,4 @@
-import 'package:xo_arena/features/game/domain/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/game_round.dart';
 
 class GameEvaluation {
   const GameEvaluation({required this.status, required this.winningIndexes});

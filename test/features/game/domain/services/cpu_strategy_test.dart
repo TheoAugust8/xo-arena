@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/cpu_strategy.dart';
-import 'package:xo_arena/features/game/domain/game_round.dart';
+import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
+import 'package:xo_arena/features/game/domain/entities/game_round.dart';
 
 void main() {
   test('hard strategy takes immediate winning move', () {
