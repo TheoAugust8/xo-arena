@@ -19,6 +19,7 @@ void main() {
       'package:riverpod_annotation/',
       'package:shared_preferences/',
       'package:audioplayers/',
+      'package:json_annotation/',
     ];
 
     final violations = _violations(
@@ -71,20 +72,10 @@ void main() {
     expect(violations, isEmpty, reason: violations.join('\n'));
   });
 
-  test('feature presentation never imports another feature presentation', () {
+  test('features never import another feature', () {
     final violations = _violations(
-      sourceFiles.where(
-        (file) =>
-            file.path.contains('/features/') &&
-            file.path.contains('/presentation/'),
-      ),
-      (importPath, sourcePath) {
-        final sourceFeature = _featureName(sourcePath);
-        final importedFeature = RegExp(
-          r'^package:xo_arena/features/([^/]+)/presentation/',
-        ).firstMatch(importPath)?.group(1);
-        return importedFeature != null && importedFeature != sourceFeature;
-      },
+      sourceFiles.where((file) => file.path.contains('/features/')),
+      _isCrossFeatureDependency,
     );
 
     expect(violations, isEmpty, reason: violations.join('\n'));
@@ -127,6 +118,57 @@ void main() {
 
     expect(violations, isEmpty, reason: violations.join('\n'));
   });
+
+  test('architecture scanner covers every Dart library directive', () {
+    const source = """
+import "package:one/import.dart" show Imported;
+export 'package:two/export.dart' hide Exported;
+import 'fallback.dart'
+  if (dart.library.io) 'io.dart';
+part 'parts/local.dart';
+part of 'package:three/library.dart';
+""";
+
+    expect(_directivePaths(source), [
+      'package:one/import.dart',
+      'package:two/export.dart',
+      'fallback.dart',
+      'io.dart',
+      'parts/local.dart',
+      'package:three/library.dart',
+    ]);
+  });
+
+  test('cross feature rule covers every feature layer', () {
+    for (final sourcePath in [
+      'lib/features/game/domain/entities/game.dart',
+      'lib/features/game/data/models/game_dto.dart',
+      'lib/features/game/presentation/game_screen.dart',
+    ]) {
+      expect(
+        _isCrossFeatureDependency(
+          'package:xo_arena/features/history/domain/usecases/clear_history.dart',
+          sourcePath,
+        ),
+        isTrue,
+      );
+    }
+
+    expect(
+      _isCrossFeatureDependency(
+        'package:xo_arena/features/game/domain/entities/game.dart',
+        'lib/features/game/presentation/game_screen.dart',
+      ),
+      isFalse,
+    );
+    expect(
+      _isCrossFeatureDependency(
+        'package:xo_arena/shared/game_records/domain/entities/game_record.dart',
+        'lib/features/game/domain/usecases/complete_game.dart',
+      ),
+      isFalse,
+    );
+  });
 }
 
 List<String> _violations(
@@ -134,19 +176,40 @@ List<String> _violations(
   bool Function(String importPath, String sourcePath) isForbidden,
 ) {
   final violations = <String>[];
-  final importPattern = RegExp(r"^import '([^']+)';", multiLine: true);
   for (final file in files) {
     final source = file.readAsStringSync();
-    for (final match in importPattern.allMatches(source)) {
-      final importPath = match.group(1)!;
-      if (isForbidden(importPath, file.path)) {
-        violations.add('${file.path}: $importPath');
+    for (final directivePath in _directivePaths(source)) {
+      if (isForbidden(directivePath, file.path)) {
+        violations.add('${file.path}: $directivePath');
       }
     }
   }
   return violations;
 }
 
+Iterable<String> _directivePaths(String source) sync* {
+  final directivePattern = RegExp(
+    r'^(?:import|export|part(?:\s+of)?)\s+([^;]+);',
+    multiLine: true,
+  );
+  final uriPattern = RegExp(r'''['"]([^'"]+)['"]''');
+  for (final directive in directivePattern.allMatches(source)) {
+    for (final uri in uriPattern.allMatches(directive.group(1)!)) {
+      yield uri.group(1)!;
+    }
+  }
+}
+
 String? _featureName(String path) {
   return RegExp(r'/features/([^/]+)/').firstMatch(path)?.group(1);
+}
+
+bool _isCrossFeatureDependency(String importPath, String sourcePath) {
+  final sourceFeature = _featureName(sourcePath);
+  final importedFeature = RegExp(
+    r'^package:xo_arena/features/([^/]+)/',
+  ).firstMatch(importPath)?.group(1);
+  return sourceFeature != null &&
+      importedFeature != null &&
+      importedFeature != sourceFeature;
 }
