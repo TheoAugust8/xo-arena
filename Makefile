@@ -5,7 +5,7 @@ SHELL := /bin/sh
 FVM_VERSION := 3.1.3
 FVM ?= $(shell command -v fvm 2>/dev/null || printf '%s/bin/fvm' "$${PUB_CACHE:-$$HOME/.pub-cache}")
 
-.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test generate generate-watch clean check
+.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test goldens update-goldens generate generate-watch clean check
 
 help:
 	@printf '%s\n' 'XO Arena commands:'
@@ -17,6 +17,8 @@ help:
 	@printf '%s\n' '  make format-check   Check Dart formatting'
 	@printf '%s\n' '  make analyze        Run static analysis'
 	@printf '%s\n' '  make test           Run tests'
+	@printf '%s\n' '  make goldens        Run visual regression tests'
+	@printf '%s\n' '  make update-goldens Update visual regression baselines'
 	@printf '%s\n' '  make generate       Run code generation'
 	@printf '%s\n' '  make generate-watch Watch code generation'
 	@printf '%s\n' '  make clean          Clean Flutter build and get dependencies'
@@ -80,6 +82,14 @@ analyze: ensure-fvm
 test: ensure-fvm
 	@printf '%s\n' 'Running tests'
 	@$(FVM) flutter test
+
+goldens: ensure-fvm
+	@printf '%s\n' 'Running visual regression tests'
+	@$(FVM) flutter test test/goldens/xo_arena_golden_test.dart
+
+update-goldens: ensure-fvm
+	@printf '%s\n' 'Updating visual regression baselines'
+	@$(FVM) flutter test --update-goldens test/goldens/xo_arena_golden_test.dart
 
 generate: ensure-fvm
 	@printf '%s\n' 'Generating Dart code'
