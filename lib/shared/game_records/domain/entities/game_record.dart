@@ -8,8 +8,6 @@ enum GameOutcome { playerOneWin, playerTwoWin, draw }
 
 @freezed
 abstract class GameRecord with _$GameRecord {
-  const GameRecord._();
-
   const factory GameRecord({
     required String id,
     required String playerOneName,
@@ -20,10 +18,4 @@ abstract class GameRecord with _$GameRecord {
     required GameDifficulty difficulty,
     required GameSymbolSkin skin,
   }) = _GameRecord;
-
-  String? get winnerName => switch (outcome) {
-    GameOutcome.playerOneWin => playerOneName,
-    GameOutcome.playerTwoWin => playerTwoName,
-    GameOutcome.draw => null,
-  };
 }

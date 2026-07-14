@@ -16,7 +16,10 @@ void main() {
       skin: GameSymbolSkin.classic,
     );
 
-    expect(record.copyWith(outcome: GameOutcome.playerTwoWin).winnerName, 'O');
+    expect(
+      record.copyWith(outcome: GameOutcome.playerTwoWin).outcome,
+      GameOutcome.playerTwoWin,
+    );
   });
 
   test('keeps game preference snapshots in domain entity', () {
@@ -33,6 +36,5 @@ void main() {
 
     expect(record.difficulty, GameDifficulty.medium);
     expect(record.skin, GameSymbolSkin.basketball);
-    expect(record.winnerName, 'You');
   });
 }

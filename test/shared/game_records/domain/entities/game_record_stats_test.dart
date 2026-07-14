@@ -20,7 +20,25 @@ void main() {
   });
 
   test('uses zero win rate for empty history', () {
-    expect(GameRecordStats.fromRecords([]), GameRecordStats.empty);
+    expect(
+      GameRecordStats.fromRecords([]),
+      const GameRecordStats(wins: 0, draws: 0, losses: 0, winRate: 0),
+    );
+  });
+
+  test('creates an immutable copy with updated values', () {
+    const stats = GameRecordStats(wins: 2, draws: 1, losses: 1, winRate: 50);
+
+    final updated = stats.copyWith(wins: 3, winRate: 60);
+
+    expect(
+      updated,
+      const GameRecordStats(wins: 3, draws: 1, losses: 1, winRate: 60),
+    );
+    expect(
+      stats,
+      const GameRecordStats(wins: 2, draws: 1, losses: 1, winRate: 50),
+    );
   });
 }
 
