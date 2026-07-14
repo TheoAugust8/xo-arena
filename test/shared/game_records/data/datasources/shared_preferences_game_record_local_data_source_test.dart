@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/data/datasources/shared_preferences_game_record_local_data_source.dart';
+import 'package:xo_arena/shared/game_records/data/models/game_record_dto.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 
@@ -99,12 +100,15 @@ void main() {
   test('skips malformed records while preserving valid records', () async {
     final validRecord = _record(id: 'valid');
     final malformedRecord = <String, dynamic>{
-      ...validRecord.toJson(),
+      ...GameRecordDto.fromDomain(validRecord).toJson(),
       'id': 'malformed',
       'skin': 'unknown',
     };
     SharedPreferences.setMockInitialValues({
-      'game_records': jsonEncode([malformedRecord, validRecord.toJson()]),
+      'game_records': jsonEncode([
+        malformedRecord,
+        GameRecordDto.fromDomain(validRecord).toJson(),
+      ]),
     });
     final source = SharedPreferencesGameRecordLocalDataSource(
       await SharedPreferences.getInstance(),
@@ -120,6 +124,81 @@ void main() {
     );
 
     expect(await source.getAll(), isEmpty);
+  });
+
+  test('returns empty history when stored payload is not a list', () async {
+    SharedPreferences.setMockInitialValues({'game_records': '{}'});
+    final source = SharedPreferencesGameRecordLocalDataSource(
+      await SharedPreferences.getInstance(),
+    );
+
+    expect(await source.getAll(), isEmpty);
+  });
+
+  test('skips record with invalid primitive type', () async {
+    final validRecord = _record(id: 'valid');
+    final invalidRecord = <String, dynamic>{
+      ...GameRecordDto.fromDomain(validRecord).toJson(),
+      'id': 'invalid',
+      'moveCount': '7',
+    };
+    SharedPreferences.setMockInitialValues({
+      'game_records': jsonEncode([
+        invalidRecord,
+        GameRecordDto.fromDomain(validRecord).toJson(),
+      ]),
+    });
+    final source = SharedPreferencesGameRecordLocalDataSource(
+      await SharedPreferences.getInstance(),
+    );
+
+    expect(await source.getAll(), [validRecord]);
+  });
+
+  test('skips record with fractional move count', () async {
+    final validRecord = _record(id: 'valid');
+    final invalidRecord = <String, dynamic>{
+      ...GameRecordDto.fromDomain(validRecord).toJson(),
+      'id': 'invalid',
+      'moveCount': 7.5,
+    };
+    SharedPreferences.setMockInitialValues({
+      'game_records': jsonEncode([
+        invalidRecord,
+        GameRecordDto.fromDomain(validRecord).toJson(),
+      ]),
+    });
+    final source = SharedPreferencesGameRecordLocalDataSource(
+      await SharedPreferences.getInstance(),
+    );
+
+    expect(await source.getAll(), [validRecord]);
+  });
+
+  test('throws when SharedPreferences returns false while saving', () async {
+    final source = SharedPreferencesGameRecordLocalDataSource(
+      _FailingWriteSharedPreferences(),
+    );
+
+    await expectLater(source.save(_record(id: 'game-1')), throwsStateError);
+  });
+
+  test('throws when SharedPreferences returns false while clearing', () async {
+    final source = SharedPreferencesGameRecordLocalDataSource(
+      _FailingClearSharedPreferences(),
+    );
+
+    await expectLater(source.clear(), throwsStateError);
+  });
+
+  test('continues mutation queue after failed save', () async {
+    final preferences = _RecoveringSharedPreferences();
+    final source = SharedPreferencesGameRecordLocalDataSource(preferences);
+
+    await expectLater(source.save(_record(id: 'failed')), throwsStateError);
+    await source.save(_record(id: 'saved'));
+
+    expect(await source.getAll(), [_record(id: 'saved')]);
   });
 }
 
@@ -141,6 +220,41 @@ final class _DelayedSharedPreferences extends Fake
   }
 
   void completeWrite() => _writeGate.complete();
+}
+
+final class _FailingWriteSharedPreferences extends Fake
+    implements SharedPreferences {
+  @override
+  String? getString(String key) => null;
+
+  @override
+  Future<bool> setString(String key, String value) async => false;
+}
+
+final class _FailingClearSharedPreferences extends Fake
+    implements SharedPreferences {
+  @override
+  bool containsKey(String key) => true;
+
+  @override
+  Future<bool> remove(String key) async => false;
+}
+
+final class _RecoveringSharedPreferences extends Fake
+    implements SharedPreferences {
+  var _writeCount = 0;
+  String? _encodedRecords;
+
+  @override
+  String? getString(String key) => _encodedRecords;
+
+  @override
+  Future<bool> setString(String key, String value) async {
+    _writeCount++;
+    if (_writeCount == 1) return false;
+    _encodedRecords = value;
+    return true;
+  }
 }
 
 GameRecord _record({required String id, DateTime? completedAt}) {

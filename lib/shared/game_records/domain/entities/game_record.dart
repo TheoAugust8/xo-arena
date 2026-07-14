@@ -3,7 +3,6 @@ import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficul
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 
 part 'game_record.freezed.dart';
-part 'game_record.g.dart';
 
 enum GameOutcome { playerOneWin, playerTwoWin, draw }
 
@@ -27,7 +26,4 @@ abstract class GameRecord with _$GameRecord {
     GameOutcome.playerTwoWin => playerTwoName,
     GameOutcome.draw => null,
   };
-
-  factory GameRecord.fromJson(Map<String, dynamic> json) =>
-      _$GameRecordFromJson(json);
 }

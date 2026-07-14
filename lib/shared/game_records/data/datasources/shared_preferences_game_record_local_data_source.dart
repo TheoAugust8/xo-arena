@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/data/datasources/game_record_local_data_source.dart';
+import 'package:xo_arena/shared/game_records/data/models/game_record_dto.dart';
 
 class SharedPreferencesGameRecordLocalDataSource
     implements GameRecordLocalDataSource {
@@ -26,15 +27,25 @@ class SharedPreferencesGameRecordLocalDataSource
     final List<dynamic> decodedRecords;
     try {
       decodedRecords = jsonDecode(encodedRecords) as List<dynamic>;
-    } on Object {
+    } on FormatException {
+      return [];
+    } on TypeError {
       return [];
     }
 
     final records = <GameRecord>[];
     for (final encodedRecord in decodedRecords) {
       try {
-        records.add(GameRecord.fromJson(encodedRecord as Map<String, dynamic>));
-      } on Object {
+        records.add(
+          GameRecordDto.fromJson(
+            encodedRecord as Map<String, dynamic>,
+          ).toDomain(),
+        );
+      } on FormatException {
+        continue;
+      } on TypeError {
+        continue;
+      } on ArgumentError {
         continue;
       }
     }
@@ -76,7 +87,9 @@ class SharedPreferencesGameRecordLocalDataSource
 
   Future<void> _write(List<GameRecord> records) async {
     final encodedRecords = jsonEncode(
-      records.map((record) => record.toJson()).toList(),
+      records
+          .map((record) => GameRecordDto.fromDomain(record).toJson())
+          .toList(),
     );
     final saved = await _preferences.setString(_recordsKey, encodedRecords);
     if (!saved) {

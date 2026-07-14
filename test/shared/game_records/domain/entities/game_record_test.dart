@@ -19,7 +19,7 @@ void main() {
     expect(record.copyWith(outcome: GameOutcome.playerTwoWin).winnerName, 'O');
   });
 
-  test('serializes game preference snapshots', () {
+  test('keeps game preference snapshots in domain entity', () {
     final record = GameRecord(
       id: 'game-2',
       playerOneName: 'You',
@@ -31,6 +31,8 @@ void main() {
       skin: GameSymbolSkin.basketball,
     );
 
-    expect(GameRecord.fromJson(record.toJson()), record);
+    expect(record.difficulty, GameDifficulty.medium);
+    expect(record.skin, GameSymbolSkin.basketball);
+    expect(record.winnerName, 'You');
   });
 }
