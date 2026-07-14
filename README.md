@@ -19,8 +19,9 @@ Core target:
 * Short functional motion with reduced motion support.
 * Synthesized gameplay sound cues with a persisted mute control.
 * Branded native startup, animated launch sequence, and platform icons.
+* Stable visual regression baselines for key screens and symbol skins.
 
-The product keeps its experience focused on a single game flow. It does not currently include first player selection, haptics, online play, or golden test infrastructure.
+The product keeps its experience focused on a single game flow. It does not currently include first player selection, haptics, or online play.
 
 ## Prerequisites
 
@@ -70,6 +71,8 @@ make format           # Format Dart files
 make format-check     # Check Dart formatting
 make analyze          # Run static analysis
 make test             # Run test suite
+make goldens          # Run visual regression tests
+make update-goldens   # Update inspected visual regression baselines
 make generate         # Generate Riverpod, Freezed, and JSON sources
 make generate-watch   # Watch declarations and regenerate sources
 make check            # Generate, check formatting, analyze, and test
@@ -110,7 +113,7 @@ Dependency rules:
 * Domain sources are grouped by responsibility into entities, repositories, services, and use cases.
 * Presentation depends on domain concepts, use cases, and public providers.
 * Data implements contracts owned by domain.
-* Features do not import another feature's presentation or internal implementation.
+* Features do not import another feature. Shared boundaries carry cross feature concepts.
 * Shared code exists only when several features genuinely depend on same concept.
 * App composition is the only place that instantiates concrete data and audio dependencies.
 * Abstractions belong at useful boundaries, not around every class.
@@ -132,7 +135,7 @@ lib/
       presentation/            Home screen
     game/
       domain/
-        entities/              Immutable game round
+        entities/              Immutable Board and Game aggregate
         services/              Pure rules, CPU strategies, and audio port
         usecases/              Completed game persistence
       data/
@@ -164,6 +167,7 @@ lib/
         repositories/          Game record repository contract
         usecases/              Shared record queries
       data/
+        models/                JSON DTO and domain mapping
         datasources/           SharedPreferences access
         repositories/          Repository implementation
 tool/
@@ -171,6 +175,7 @@ tool/
 test/
   architecture/                Enforced dependency rules
   features/                    Feature domain, data, and widget tests
+  goldens/                     Stable screen and symbol baselines
   shared/                      Shared domain, data, and presentation tests
 ```
 
@@ -184,15 +189,15 @@ test/
 
 `settingsProvider` exposes System theme, Hard difficulty, Classic skin, and enabled sound defaults immediately, restores stored choices asynchronously, and serializes writes. Home and Game share one settings state without importing `app` or each other's presentation code.
 
-The game notifier owns turn orchestration, CPU waiting state, stale asynchronous result protection, completed game persistence, and restart behavior. Pure win rules and CPU algorithms remain outside Riverpod.
+The game notifier owns turn orchestration, CPU waiting state, stale asynchronous result protection, completed game persistence, and restart behavior. The immutable `Game` aggregate owns the board, current player, player to symbol mapping, status, winner, and winning indexes. `Board`, win rules, and CPU algorithms stay pure and independent from Riverpod.
 
 ## Persistence
 
-`GameRecord` is immutable Freezed model. Freezed provides value equality and `copyWith`; json_serializable provides JSON conversion. Records capture difficulty and symbol style snapshots.
+`GameRecord` is a pure immutable Freezed domain model. `GameRecordDto` lives in Data and owns JSON conversion plus mapping to and from Domain. Records capture difficulty and symbol style snapshots while preserving the existing stored keys, enum names, and ISO 8601 dates.
 
 `GameRecordRepository` belongs to domain. `GameRecordRepositoryImpl` delegates to `GameRecordLocalDataSource`, while `SharedPreferencesGameRecordLocalDataSource` owns storage format and local mutations.
 
-Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles.
+Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles. Invalid records are skipped individually, while a globally invalid payload returns an empty history. Failed writes remain visible as storage errors and do not block the next queued mutation.
 
 ## Navigation
 
@@ -226,19 +231,22 @@ Current tests cover:
 * History loading, empty state, delete, clear, and mutation locking.
 * History summaries, metadata, retry, and mutation failure feedback.
 * History use cases and repository delegation.
-* GameRecord equality, copying, and JSON conversion.
-* SharedPreferences serialization and concurrent mutations.
+* GameRecord equality and copying plus GameRecordDto wire compatibility.
+* Targeted record corruption, SharedPreferences write failures, serialization, and queue recovery.
 * Completed game persistence use case.
 * Preference defaults, restoration, corruption fallback, and ordered writes.
 * Sound synthesis, transition cue mapping, mute persistence, and Game integration.
 * Game record metadata validation and shared statistics.
 * Launch timing, reduced motion behavior, and launch semantics.
 * Architecture dependency rules between App, Core, Presentation, Domain, and Data.
+* Five visual regression baselines covering Home, Game, History, Settings, and every symbol skin.
 
 Game coverage:
 
+* Board shape, available moves, safe placement, and move count.
 * All eight winning patterns.
 * Draw and full board win distinction.
+* Player alternation, player to symbol mapping, and wrong player rejection.
 * Valid and invalid moves.
 * No move after completion.
 * Immediate CPU win and Human win block.
@@ -282,7 +290,7 @@ TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays c
 
 ### Why Freezed is used for value state
 
-GameRecord benefits from generated equality, copying, and JSON conversion. GameRound and GameState benefit from immutable collections, generated equality, and safe state updates. Simple types remain plain Dart when generation adds no clear value.
+GameRecord benefits from generated equality and copying while JSON stays in its Data DTO. GameState uses generated value equality. Board and Game stay small explicit value types with defensive collection copying and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
 
 ### Why deterministic Minimax is target CPU strategy
 
