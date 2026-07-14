@@ -231,7 +231,7 @@ void main() {
     expect(sounds.played, isEmpty);
   });
 
-  testWidgets('disables New Game until a round is complete', (tester) async {
+  testWidgets('disables New Game until a game is complete', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 

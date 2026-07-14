@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/game.dart';
 
 part 'game_state.freezed.dart';
 
 @freezed
 abstract class GameState with _$GameState {
   const factory GameState({
-    required GameRound round,
+    required Game game,
     required bool isCpuThinking,
     required int playerScore,
     required int cpuScore,
@@ -14,7 +14,7 @@ abstract class GameState with _$GameState {
   }) = _GameState;
 
   factory GameState.initial() => GameState(
-    round: GameRound.initial(),
+    game: Game.initial(),
     isCpuThinking: false,
     playerScore: 0,
     cpuScore: 0,

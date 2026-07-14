@@ -134,7 +134,12 @@ final List<WidgetbookNode> appWidgetbookDirectories = [
         useCases: [
           WidgetbookUseCase(
             name: 'Default',
-            builder: (_) => const GameScore(playerScore: 3, cpuScore: 1),
+            builder: (_) => const GameScore(
+              playerScore: 3,
+              cpuScore: 1,
+              playerMark: GameSymbolMark.x,
+              cpuMark: GameSymbolMark.o,
+            ),
           ),
         ],
       ),

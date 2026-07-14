@@ -1,18 +1,15 @@
-import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/board.dart';
 
 class GameEvaluation {
-  const GameEvaluation({required this.status, required this.winningIndexes});
+  const GameEvaluation({
+    required this.winningMark,
+    required this.winningIndexes,
+    required this.isDraw,
+  });
 
-  final GameStatus status;
+  final GameMark? winningMark;
   final List<int> winningIndexes;
-}
-
-enum GameMoveFailure { outOfBounds, occupied, gameComplete }
-
-final class GameMoveException implements Exception {
-  const GameMoveException(this.reason);
-
-  final GameMoveFailure reason;
+  final bool isDraw;
 }
 
 abstract final class GameRules {
@@ -27,47 +24,21 @@ abstract final class GameRules {
     [2, 4, 6],
   ];
 
-  static GameEvaluation evaluate(List<GameMark?> cells) {
-    if (cells.length != 9) {
-      throw ArgumentError.value(cells.length, 'cells.length', 'must be 9');
-    }
-
+  static GameEvaluation evaluate(Board board) {
     for (final line in winningLines) {
-      final mark = cells[line.first];
-      if (mark != null && line.every((index) => cells[index] == mark)) {
+      final mark = board.cells[line.first];
+      if (mark != null && line.every((index) => board.cells[index] == mark)) {
         return GameEvaluation(
-          status: mark == GameMark.player
-              ? GameStatus.playerWon
-              : GameStatus.cpuWon,
+          winningMark: mark,
           winningIndexes: line,
+          isDraw: false,
         );
       }
     }
     return GameEvaluation(
-      status: cells.every((mark) => mark != null)
-          ? GameStatus.draw
-          : GameStatus.active,
+      winningMark: null,
       winningIndexes: const [],
-    );
-  }
-
-  static GameRound applyMove(GameRound round, int index, GameMark mark) {
-    if (round.isComplete) {
-      throw const GameMoveException(GameMoveFailure.gameComplete);
-    }
-    if (index < 0 || index >= round.cells.length) {
-      throw const GameMoveException(GameMoveFailure.outOfBounds);
-    }
-    if (round.cells[index] != null) {
-      throw const GameMoveException(GameMoveFailure.occupied);
-    }
-
-    final cells = [...round.cells]..[index] = mark;
-    final evaluation = evaluate(cells);
-    return GameRound(
-      cells: cells,
-      status: evaluation.status,
-      winningIndexes: evaluation.winningIndexes,
+      isDraw: board.availableMoves.isEmpty,
     );
   }
 }

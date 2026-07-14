@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:xo_arena/features/game/domain/entities/game.dart';
+import 'package:xo_arena/features/game/domain/entities/game_move_exception.dart';
 import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
-import 'package:xo_arena/features/game/domain/services/game_rules.dart';
-import 'package:xo_arena/features/game/domain/entities/game_round.dart';
 import 'package:xo_arena/features/game/domain/usecases/complete_game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
@@ -40,20 +40,21 @@ class GameNotifier extends _$GameNotifier {
     if (state.isCpuThinking) {
       return;
     }
-    final GameRound next;
+    final Game next;
     try {
-      next = GameRules.applyMove(state.round, index, GameMark.player);
+      next = state.game.applyMove(by: GamePlayer.human, index: index);
     } on GameMoveException {
       return;
     }
     state = state.copyWith(
-      round: next,
-      playerScore: next.status == GameStatus.playerWon
+      game: next,
+      playerScore:
+          next.status == GameStatus.won && next.winner == GamePlayer.human
           ? state.playerScore + 1
           : state.playerScore,
     );
     if (next.isComplete) {
-      _saveCompletedRound(next);
+      _saveCompletedGame(next);
     } else {
       _scheduleCpu();
     }
@@ -63,7 +64,7 @@ class GameNotifier extends _$GameNotifier {
     _generation++;
     _cpuTimer?.cancel();
     state = state.copyWith(
-      round: GameRound.initial(),
+      game: Game.initial(),
       isCpuThinking: false,
       historySaveFailed: false,
     );
@@ -82,28 +83,28 @@ class GameNotifier extends _$GameNotifier {
     state = state.copyWith(isCpuThinking: true);
     _cpuTimer?.cancel();
     _cpuTimer = Timer(ref.read(cpuTurnDelayProvider), () {
-      if (generation != _generation || state.round.isComplete) return;
+      if (generation != _generation || state.game.isComplete) return;
       final move = CpuStrategyFactory.forDifficulty(
         ref.read(settingsProvider).difficulty,
-      ).chooseMove(state.round.cells);
-      final next = GameRules.applyMove(state.round, move, GameMark.cpu);
+      ).chooseMove(state.game);
+      final next = state.game.applyMove(by: GamePlayer.cpu, index: move);
       state = state.copyWith(
-        round: next,
+        game: next,
         isCpuThinking: false,
-        cpuScore: next.status == GameStatus.cpuWon
+        cpuScore: next.status == GameStatus.won && next.winner == GamePlayer.cpu
             ? state.cpuScore + 1
             : state.cpuScore,
       );
       if (next.isComplete) {
-        _saveCompletedRound(next);
+        _saveCompletedGame(next);
       }
     });
   }
 
-  void _saveCompletedRound(GameRound round) {
+  void _saveCompletedGame(Game game) {
     final generation = _generation;
     unawaited(
-      _persistCompletedRound(round)
+      _persistCompletedGame(game)
           .then((_) {
             if (!ref.mounted) return;
             ref.invalidate(gameRecordsProvider);
@@ -115,10 +116,10 @@ class GameNotifier extends _$GameNotifier {
     );
   }
 
-  Future<void> _persistCompletedRound(GameRound round) {
+  Future<void> _persistCompletedGame(Game game) {
     final settings = ref.read(settingsProvider);
     return ref.read(completeGameUseCaseProvider)(
-      round: round,
+      game: game,
       difficulty: settings.difficulty,
       skin: settings.skin,
     );

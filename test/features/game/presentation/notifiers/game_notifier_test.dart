@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_notifier.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
@@ -47,7 +47,7 @@ void main() {
     notifier.play(1);
 
     expect(container.read(gameProvider).isCpuThinking, isTrue);
-    expect(container.read(gameProvider).round.cells[1], isNull);
+    expect(container.read(gameProvider).game.board.cells[1], isNull);
   });
 
   test('restart invalidates a pending CPU turn', () async {
@@ -63,11 +63,11 @@ void main() {
     notifier.restart();
     await Future<void>.delayed(Duration.zero);
 
-    expect(container.read(gameProvider).round, GameRound.initial());
+    expect(container.read(gameProvider).game, Game.initial());
     expect(container.read(gameProvider).isCpuThinking, isFalse);
   });
 
-  test('persists a completed round once', () async {
+  test('persists a completed game once', () async {
     final repository = _RecordingGameRecordRepository();
     final container = ProviderContainer(
       overrides: [
@@ -105,7 +105,7 @@ void main() {
     expect(repository.records.single.skin, GameSymbolSkin.classic);
   });
 
-  test('exposes a completed round persistence failure', () async {
+  test('exposes a completed game persistence failure', () async {
     final container = ProviderContainer(
       overrides: [
         gameRecordRepositoryProvider.overrideWithValue(
@@ -156,7 +156,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
   });
 
-  test('ignores persistence failure from a previous round', () async {
+  test('ignores persistence failure from a previous game', () async {
     final repository = _PendingFailingGameRecordRepository();
     final container = ProviderContainer(
       overrides: [
@@ -182,11 +182,11 @@ void main() {
     repository.failSave();
     await Future<void>.delayed(Duration.zero);
 
-    expect(container.read(gameProvider).round, GameRound.initial());
+    expect(container.read(gameProvider).game, Game.initial());
     expect(container.read(gameProvider).historySaveFailed, isFalse);
   });
 
-  test('changing difficulty preserves active round', () async {
+  test('changing difficulty preserves active game', () async {
     final repository = _MemorySettingsRepository();
     final container = ProviderContainer(
       overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
@@ -197,15 +197,15 @@ void main() {
     final notifier = container.read(gameProvider.notifier);
 
     notifier.play(0);
-    final activeRound = container.read(gameProvider).round;
+    final activeGame = container.read(gameProvider).game;
     await notifier.setDifficulty(GameDifficulty.easy);
 
-    expect(container.read(gameProvider).round, activeRound);
+    expect(container.read(gameProvider).game, activeGame);
     expect(container.read(settingsProvider).difficulty, GameDifficulty.easy);
     expect(repository.value.difficulty, GameDifficulty.easy);
   });
 
-  test('changing skin preserves active round', () async {
+  test('changing skin preserves active game', () async {
     final repository = _MemorySettingsRepository();
     final container = ProviderContainer(
       overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
@@ -216,10 +216,10 @@ void main() {
     final notifier = container.read(gameProvider.notifier);
 
     notifier.play(0);
-    final activeRound = container.read(gameProvider).round;
+    final activeGame = container.read(gameProvider).game;
     await notifier.setSkin(GameSymbolSkin.football);
 
-    expect(container.read(gameProvider).round, activeRound);
+    expect(container.read(gameProvider).game, activeGame);
     expect(container.read(settingsProvider).skin, GameSymbolSkin.football);
   });
 }

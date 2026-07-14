@@ -28,14 +28,10 @@ void main() {
       expect(find.byType(GameCell), findsOneWidget);
     }
 
-    await tester.pumpWidget(
-      themed(const GameCell(variant: GameCellVariant.playerX)),
-    );
+    await tester.pumpWidget(themed(const GameCell(variant: GameCellVariant.x)));
     expect(find.text('X'), findsOneWidget);
 
-    await tester.pumpWidget(
-      themed(const GameCell(variant: GameCellVariant.cpuO)),
-    );
+    await tester.pumpWidget(themed(const GameCell(variant: GameCellVariant.o)));
     expect(find.text('O'), findsOneWidget);
 
     await tester.pumpWidget(
@@ -56,7 +52,7 @@ void main() {
       themed(
         const MediaQuery(
           data: MediaQueryData(disableAnimations: true),
-          child: GameCell(variant: GameCellVariant.playerX),
+          child: GameCell(variant: GameCellVariant.x),
         ),
       ),
     );
@@ -70,9 +66,7 @@ void main() {
   testWidgets('exposes one semantic label for cells and status', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      themed(const GameCell(variant: GameCellVariant.playerX)),
-    );
+    await tester.pumpWidget(themed(const GameCell(variant: GameCellVariant.x)));
 
     expect(find.bySemanticsLabel('X'), findsOneWidget);
 
@@ -180,7 +174,14 @@ void main() {
 
   testWidgets('renders score component', (tester) async {
     await tester.pumpWidget(
-      themed(const GameScore(playerScore: 3, cpuScore: 1)),
+      themed(
+        const GameScore(
+          playerScore: 3,
+          cpuScore: 1,
+          playerMark: GameSymbolMark.x,
+          cpuMark: GameSymbolMark.o,
+        ),
+      ),
     );
 
     expect(find.text('YOU'), findsOneWidget);
@@ -196,6 +197,8 @@ void main() {
         const GameScore(
           playerScore: 3,
           cpuScore: 1,
+          playerMark: GameSymbolMark.x,
+          cpuMark: GameSymbolMark.o,
           skin: GameSymbolSkin.tennis,
         ),
       ),
@@ -209,14 +212,47 @@ void main() {
     expect(find.text('X'), findsNothing);
   });
 
+  testWidgets('renders score symbols from player mapping', (tester) async {
+    await tester.pumpWidget(
+      themed(
+        const GameScore(
+          playerScore: 2,
+          cpuScore: 4,
+          playerMark: GameSymbolMark.o,
+          cpuMark: GameSymbolMark.x,
+        ),
+      ),
+    );
+
+    final symbols = tester.widgetList<GameSymbol>(find.byType(GameSymbol));
+    expect(symbols.map((symbol) => symbol.mark), [
+      GameSymbolMark.o,
+      GameSymbolMark.x,
+    ]);
+  });
+
   testWidgets('animates score changes and respects reduced motion', (
     tester,
   ) async {
     await tester.pumpWidget(
-      themed(const GameScore(playerScore: 0, cpuScore: 0)),
+      themed(
+        const GameScore(
+          playerScore: 0,
+          cpuScore: 0,
+          playerMark: GameSymbolMark.x,
+          cpuMark: GameSymbolMark.o,
+        ),
+      ),
     );
     await tester.pumpWidget(
-      themed(const GameScore(playerScore: 1, cpuScore: 0)),
+      themed(
+        const GameScore(
+          playerScore: 1,
+          cpuScore: 0,
+          playerMark: GameSymbolMark.x,
+          cpuMark: GameSymbolMark.o,
+        ),
+      ),
     );
 
     expect(find.text('1'), findsOneWidget);
@@ -232,7 +268,12 @@ void main() {
       themed(
         const MediaQuery(
           data: MediaQueryData(disableAnimations: true),
-          child: GameScore(playerScore: 1, cpuScore: 0),
+          child: GameScore(
+            playerScore: 1,
+            cpuScore: 0,
+            playerMark: GameSymbolMark.x,
+            cpuMark: GameSymbolMark.o,
+          ),
         ),
       ),
     );

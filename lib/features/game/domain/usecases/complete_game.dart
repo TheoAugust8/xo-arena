@@ -1,4 +1,4 @@
-import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/game.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/domain/repositories/game_record_repository.dart';
@@ -12,17 +12,15 @@ final class CompleteGameUseCase {
   final DateTime Function() _now;
 
   Future<void> call({
-    required GameRound round,
+    required Game game,
     required GameDifficulty difficulty,
     required GameSymbolSkin skin,
   }) {
-    final outcome = switch (round.status) {
-      GameStatus.playerWon => GameOutcome.playerOneWin,
-      GameStatus.cpuWon => GameOutcome.playerTwoWin,
-      GameStatus.draw => GameOutcome.draw,
-      GameStatus.active => throw StateError(
-        'Only completed rounds can persist.',
-      ),
+    final outcome = switch ((game.status, game.winner)) {
+      (GameStatus.won, GamePlayer.human) => GameOutcome.playerOneWin,
+      (GameStatus.won, GamePlayer.cpu) => GameOutcome.playerTwoWin,
+      (GameStatus.draw, _) => GameOutcome.draw,
+      _ => throw StateError('Only completed games can persist.'),
     };
     final completedAt = _now();
     return _repository.save(
@@ -31,7 +29,7 @@ final class CompleteGameUseCase {
         playerOneName: 'You',
         playerTwoName: 'CPU',
         outcome: outcome,
-        moveCount: round.cells.whereType<GameMark>().length,
+        moveCount: game.board.moveCount,
         completedAt: completedAt,
         difficulty: difficulty,
         skin: skin,

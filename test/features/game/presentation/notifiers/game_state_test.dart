@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/entities/game_round.dart';
+import 'package:xo_arena/features/game/domain/entities/board.dart';
+import 'package:xo_arena/features/game/domain/entities/game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
 
 void main() {
@@ -15,20 +16,23 @@ void main() {
 
     expect(updated.isCpuThinking, isTrue);
     expect(initial.isCpuThinking, isFalse);
-    expect(updated.round, initial.round);
+    expect(updated.game, initial.game);
   });
 
-  test('compares equivalent rounds by value', () {
-    final first = GameRound.initial();
-    final second = GameRound.initial();
+  test('compares equivalent games by value', () {
+    final first = Game.initial();
+    final second = Game.initial();
 
     expect(first, second);
   });
 
-  test('does not expose mutable round collections', () {
-    final round = GameRound.initial();
+  test('does not expose mutable game collections', () {
+    final game = Game.initial();
 
-    expect(() => round.cells[0] = GameMark.player, throwsUnsupportedError);
-    expect(() => round.winningIndexes.add(0), throwsUnsupportedError);
+    expect(() => game.board.cells[0] = GameMark.x, throwsUnsupportedError);
+    expect(
+      () => game.playerMarks[GamePlayer.human] = GameMark.o,
+      throwsUnsupportedError,
+    );
   });
 }

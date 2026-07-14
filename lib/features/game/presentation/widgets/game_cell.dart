@@ -5,7 +5,7 @@ import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 
-enum GameCellVariant { empty, playerX, cpuO, pressed, disabled, winning }
+enum GameCellVariant { empty, x, o, pressed, disabled, winning }
 
 class GameCell extends StatelessWidget {
   const GameCell({
@@ -28,25 +28,25 @@ class GameCell extends StatelessWidget {
     final tokens = context.appTokens;
     final enabled = variant != GameCellVariant.disabled && onPressed != null;
     final background = switch (variant) {
-      GameCellVariant.playerX => tokens.xCellBackground,
-      GameCellVariant.cpuO => tokens.oCellBackground,
+      GameCellVariant.x => tokens.xCellBackground,
+      GameCellVariant.o => tokens.oCellBackground,
       GameCellVariant.pressed => tokens.cellPressedBackground,
       GameCellVariant.winning => tokens.winBackground,
       GameCellVariant.disabled || GameCellVariant.empty => tokens.surface,
     };
     final border = switch (variant) {
-      GameCellVariant.playerX => tokens.primary.withValues(alpha: 0.28),
-      GameCellVariant.cpuO || GameCellVariant.pressed => tokens.borderStrong,
+      GameCellVariant.x => tokens.primary.withValues(alpha: 0.28),
+      GameCellVariant.o || GameCellVariant.pressed => tokens.borderStrong,
       GameCellVariant.winning => tokens.win,
       _ => tokens.border,
     };
     final resolvedMark =
         mark ??
         switch (variant) {
-          GameCellVariant.playerX ||
+          GameCellVariant.x ||
           GameCellVariant.disabled ||
           GameCellVariant.winning => GameSymbolMark.x,
-          GameCellVariant.cpuO => GameSymbolMark.o,
+          GameCellVariant.o => GameSymbolMark.o,
           _ => null,
         };
 

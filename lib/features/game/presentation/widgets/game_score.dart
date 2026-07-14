@@ -10,12 +10,16 @@ class GameScore extends StatelessWidget {
   const GameScore({
     required this.playerScore,
     required this.cpuScore,
+    required this.playerMark,
+    required this.cpuMark,
     this.skin = GameSymbolSkin.classic,
     super.key,
   });
 
   final int playerScore;
   final int cpuScore;
+  final GameSymbolMark playerMark;
+  final GameSymbolMark cpuMark;
   final GameSymbolSkin skin;
 
   @override
@@ -37,10 +41,11 @@ class GameScore extends StatelessWidget {
           children: [
             Expanded(
               child: _ScoreSide(
-                mark: GameSymbolMark.x,
+                mark: playerMark,
                 label: 'YOU',
                 value: playerScore,
                 skin: skin,
+                isHuman: true,
               ),
             ),
             Padding(
@@ -64,10 +69,11 @@ class GameScore extends StatelessWidget {
             ),
             Expanded(
               child: _ScoreSide(
-                mark: GameSymbolMark.o,
+                mark: cpuMark,
                 label: 'CPU',
                 value: cpuScore,
                 skin: skin,
+                isHuman: false,
                 labelFirst: true,
               ),
             ),
@@ -84,6 +90,7 @@ class _ScoreSide extends StatelessWidget {
     required this.label,
     required this.value,
     required this.skin,
+    required this.isHuman,
     this.labelFirst = false,
   });
 
@@ -91,12 +98,13 @@ class _ScoreSide extends StatelessWidget {
   final String label;
   final int value;
   final GameSymbolSkin skin;
+  final bool isHuman;
   final bool labelFirst;
 
   @override
   Widget build(BuildContext context) {
     final header = <Widget>[
-      _SymbolTile(mark: mark, skin: skin),
+      _SymbolTile(mark: mark, skin: skin, isHuman: isHuman),
       const SizedBox(width: AppSpacing.space8),
       Text(label, style: Theme.of(context).textTheme.bodySmall),
     ];
@@ -154,26 +162,29 @@ class _AnimatedScoreValue extends StatelessWidget {
 }
 
 class _SymbolTile extends StatelessWidget {
-  const _SymbolTile({required this.mark, required this.skin});
+  const _SymbolTile({
+    required this.mark,
+    required this.skin,
+    required this.isHuman,
+  });
 
   final GameSymbolMark mark;
   final GameSymbolSkin skin;
+  final bool isHuman;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final isPlayer = mark == GameSymbolMark.x;
-
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: isPlayer ? tokens.primary : tokens.surface,
-        border: isPlayer ? null : Border.all(color: tokens.borderStrong),
+        color: isHuman ? tokens.primary : tokens.surface,
+        border: isHuman ? null : Border.all(color: tokens.borderStrong),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: SizedBox.square(
         dimension: 28,
         child: Center(
-          child: isPlayer
+          child: isHuman
               ? ColorFiltered(
                   colorFilter: const ColorFilter.mode(
                     Colors.white,
