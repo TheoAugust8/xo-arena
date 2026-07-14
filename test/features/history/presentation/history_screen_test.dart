@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
-import 'package:xo_arena/features/history/presentation/history_providers.dart';
 import 'package:xo_arena/features/history/presentation/history_screen.dart';
-import 'package:xo_arena/features/history/domain/usecases/clear_history.dart';
-import 'package:xo_arena/features/history/domain/usecases/delete_game_record.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
@@ -25,12 +22,7 @@ void main() {
       ProviderScope(
         overrides: [
           gameRecordsProvider.overrideWith((ref) => repository.getAll()),
-          deleteGameRecordUseCaseProvider.overrideWithValue(
-            DeleteGameRecordUseCase(repository),
-          ),
-          clearHistoryUseCaseProvider.overrideWithValue(
-            ClearHistoryUseCase(repository),
-          ),
+          gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(theme: AppTheme.dark, home: const HistoryScreen()),
       ),
@@ -244,6 +236,32 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('ignores a second delete while one is pending', (tester) async {
+    final repository = ReentrantDeleteGameRecordRepository();
+    await repository.save(_record(id: 'game-1'));
+
+    await _pumpHistory(tester, repository);
+    final dismissible = tester.widget<Dismissible>(
+      find.byKey(const Key('dismiss-game-1')),
+    );
+
+    final firstDelete = dismissible.confirmDismiss!(
+      DismissDirection.endToStart,
+    );
+    await repository.deleteStarted.future;
+    final secondDelete = dismissible.confirmDismiss!(
+      DismissDirection.endToStart,
+    );
+    await tester.pump();
+
+    expect(repository.deleteCalls, 1);
+
+    repository.completeDelete();
+    expect(await firstDelete, isTrue);
+    expect(await secondDelete, isFalse);
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('ignores a delete completion after screen disposal', (
     tester,
   ) async {
@@ -275,12 +293,7 @@ void main() {
             if (shouldFail) throw StateError('load failed');
             return repository.getAll();
           }),
-          deleteGameRecordUseCaseProvider.overrideWithValue(
-            DeleteGameRecordUseCase(repository),
-          ),
-          clearHistoryUseCaseProvider.overrideWithValue(
-            ClearHistoryUseCase(repository),
-          ),
+          gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(theme: AppTheme.dark, home: const HistoryScreen()),
       ),
@@ -326,12 +339,7 @@ void main() {
       ProviderScope(
         overrides: [
           gameRecordsProvider.overrideWith((ref) => repository.getAll()),
-          deleteGameRecordUseCaseProvider.overrideWithValue(
-            DeleteGameRecordUseCase(repository),
-          ),
-          clearHistoryUseCaseProvider.overrideWithValue(
-            ClearHistoryUseCase(repository),
-          ),
+          gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
           theme: AppTheme.dark,
@@ -407,12 +415,7 @@ Future<void> _pumpHistory(
     ProviderScope(
       overrides: [
         gameRecordsProvider.overrideWith((ref) => repository.getAll()),
-        deleteGameRecordUseCaseProvider.overrideWithValue(
-          DeleteGameRecordUseCase(repository),
-        ),
-        clearHistoryUseCaseProvider.overrideWithValue(
-          ClearHistoryUseCase(repository),
-        ),
+        gameRecordRepositoryProvider.overrideWithValue(repository),
       ],
       child: MaterialApp(theme: AppTheme.dark, home: const HistoryScreen()),
     ),
@@ -451,6 +454,24 @@ class PendingDeleteGameRecordRepository extends InMemoryGameRecordRepository {
   Future<void> delete(String id) async {
     deleteStarted.complete();
     await _deleteCompleter.future;
+    await super.delete(id);
+  }
+
+  void completeDelete() => _deleteCompleter.complete();
+}
+
+class ReentrantDeleteGameRecordRepository extends InMemoryGameRecordRepository {
+  final deleteStarted = Completer<void>();
+  final _deleteCompleter = Completer<void>();
+  var deleteCalls = 0;
+
+  @override
+  Future<void> delete(String id) async {
+    deleteCalls++;
+    if (deleteCalls == 1) {
+      deleteStarted.complete();
+      await _deleteCompleter.future;
+    }
     await super.delete(id);
   }
 

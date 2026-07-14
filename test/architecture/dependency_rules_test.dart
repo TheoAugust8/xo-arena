@@ -147,7 +147,7 @@ part of 'package:three/library.dart';
     ]) {
       expect(
         _isCrossFeatureDependency(
-          'package:xo_arena/features/history/domain/usecases/clear_history.dart',
+          'package:xo_arena/features/history/presentation/history_screen.dart',
           sourcePath,
         ),
         isTrue,

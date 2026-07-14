@@ -7,7 +7,6 @@ import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 import 'package:xo_arena/core/design_system/components/app_logo.dart';
-import 'package:xo_arena/features/history/presentation/history_providers.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
@@ -32,9 +31,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   var _isMutating = false;
 
   Future<bool> _delete(String id) async {
+    if (_isMutating) return false;
     setState(() => _isMutating = true);
     try {
-      await ref.read(deleteGameRecordUseCaseProvider)(id);
+      await ref.read(gameRecordRepositoryProvider).delete(id);
       if (!mounted) return false;
       ref.invalidate(gameRecordsProvider);
       return true;
@@ -47,19 +47,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 
   Future<void> _confirmClear() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.72),
-      builder: (context) => const _ClearHistoryDialog(),
-    );
-    if (!mounted) return;
-    if (confirmed == true) await _clear();
-  }
-
-  Future<void> _clear() async {
+    if (_isMutating) return;
     setState(() => _isMutating = true);
     try {
-      await ref.read(clearHistoryUseCaseProvider)();
+      final confirmed = await showDialog<bool>(
+        context: context,
+        barrierColor: Colors.black.withValues(alpha: 0.72),
+        builder: (context) => const _ClearHistoryDialog(),
+      );
+      if (!mounted || confirmed != true) return;
+      await ref.read(gameRecordRepositoryProvider).clear();
       if (!mounted) return;
       ref.invalidate(gameRecordsProvider);
     } on Object {
