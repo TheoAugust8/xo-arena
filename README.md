@@ -1,6 +1,61 @@
-# XO Arena
+<div align="center">
+  <a href="https://xo-arena-web-20260714.web.app">
+    <img src="assets/branding/xo_arena_app_icon.svg" alt="XO Arena logo" width="132" />
+  </a>
 
-XO Arena is a Flutter tic tac toe application built around a focused Human versus CPU experience. The project favors clear domain rules, pragmatic Clean Architecture, deterministic behavior, accessibility, and tests over unnecessary feature breadth.
+  <h1>XO Arena</h1>
+
+  <p><strong>Prove your edge against the machine.</strong></p>
+
+  <p>
+    A polished Flutter tic tac toe experience built for Human versus CPU play.
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Android-3DDC84?logo=android&amp;logoColor=white" alt="Android" />
+    <img src="https://img.shields.io/badge/iOS-000000?logo=apple&amp;logoColor=white" alt="iOS" />
+    <img src="https://img.shields.io/badge/macOS-000000?logo=apple&amp;logoColor=white" alt="macOS" />
+    <img src="https://img.shields.io/badge/Windows-0078D4?logo=windows&amp;logoColor=white" alt="Windows" />
+    <img src="https://img.shields.io/badge/Linux-FCC624?logo=linux&amp;logoColor=black" alt="Linux" />
+    <img src="https://img.shields.io/badge/Web-02569B?logo=flutter&amp;logoColor=white" alt="Web" />
+  </p>
+
+  <p>
+    <a href="https://xo-arena-web-20260714.web.app"><strong>Play XO Arena on the web</strong></a>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&amp;logoColor=white" alt="Flutter 3.44" />
+    <img src="https://img.shields.io/badge/Riverpod-3-D92B35" alt="Riverpod 3" />
+    <img src="https://img.shields.io/badge/Firebase-Hosting-FFCA28?logo=firebase&amp;logoColor=black" alt="Firebase Hosting" />
+    <a href="https://github.com/TheoAugust8/xo-arena/actions/workflows/quality.yml">
+      <img src="https://github.com/TheoAugust8/xo-arena/actions/workflows/quality.yml/badge.svg?branch=main" alt="Quality status" />
+    </a>
+  </p>
+</div>
+
+XO Arena favors clear domain rules, pragmatic Clean Architecture, deterministic behavior, accessibility, and tests over unnecessary feature breadth.
+
+## Experience
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="test/goldens/files/macos/home_with_statistics.png" alt="XO Arena Home screen" width="240" />
+    </td>
+    <td align="center">
+      <img src="test/goldens/files/macos/game_initial.png" alt="XO Arena Game screen" width="240" />
+    </td>
+    <td align="center">
+      <img src="test/goldens/files/macos/history_populated.png" alt="XO Arena History screen" width="240" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Home</strong><br />Difficulty, statistics, and quick play</td>
+    <td align="center"><strong>Game</strong><br />Responsive Human versus CPU match</td>
+    <td align="center"><strong>History</strong><br />Persistent results and match details</td>
+  </tr>
+</table>
 
 ## Product scope
 
@@ -52,8 +107,12 @@ make run
 
 ## Deploy web
 
-XO Arena uses Firebase Hosting. GitHub Actions builds every pull request to
-`main` and posts a Firebase preview URL. A push to `main` deploys production.
+Production runs on Firebase Hosting:
+
+**[xo-arena-web-20260714.web.app](https://xo-arena-web-20260714.web.app)**
+
+GitHub Actions builds every pull request to `main` and posts a Firebase preview
+URL. A push to `main` deploys production.
 
 Before first deployment, configure these GitHub repository values:
 
