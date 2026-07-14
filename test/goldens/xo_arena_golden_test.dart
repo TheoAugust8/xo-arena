@@ -4,9 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/game_screen.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
-import 'package:xo_arena/features/history/domain/usecases/clear_history.dart';
-import 'package:xo_arena/features/history/domain/usecases/delete_game_record.dart';
-import 'package:xo_arena/features/history/presentation/history_providers.dart';
 import 'package:xo_arena/features/history/presentation/history_screen.dart';
 import 'package:xo_arena/features/home/presentation/home_screen.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
@@ -99,12 +96,7 @@ void main() {
       ProviderScope(
         overrides: [
           gameRecordsProvider.overrideWith((ref) => repository.getAll()),
-          deleteGameRecordUseCaseProvider.overrideWithValue(
-            DeleteGameRecordUseCase(repository),
-          ),
-          clearHistoryUseCaseProvider.overrideWithValue(
-            ClearHistoryUseCase(repository),
-          ),
+          gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
         child: goldenApp(home: const HistoryScreen()),
       ),
@@ -122,7 +114,6 @@ void main() {
       goldenApp(
         home: Scaffold(
           body: SettingsSheet(
-            theme: AppThemePreference.dark,
             settings: AppSettings.defaults.copyWith(
               theme: AppThemePreference.dark,
               difficulty: GameDifficulty.medium,

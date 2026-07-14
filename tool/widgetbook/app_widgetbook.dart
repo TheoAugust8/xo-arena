@@ -4,7 +4,6 @@ import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_radius.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
-import 'package:xo_arena/core/design_system/components/app_button.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_status_badge.dart';
@@ -79,34 +78,6 @@ final List<WidgetbookNode> appWidgetbookDirectories = [
   WidgetbookFolder(
     name: 'Components',
     children: [
-      WidgetbookComponent(
-        name: 'Buttons',
-        useCases: [
-          WidgetbookUseCase(
-            name: 'Primary',
-            builder: (_) => AppButton.primary(
-              label: 'NEW GAME',
-              onPressed: () {},
-              icon: const Icon(Icons.refresh, size: 16),
-            ),
-          ),
-          WidgetbookUseCase(
-            name: 'Secondary',
-            builder: (_) => AppButton.secondary(
-              label: 'NEW GAME',
-              onPressed: () {},
-              icon: const Icon(Icons.refresh, size: 16),
-            ),
-          ),
-          WidgetbookUseCase(
-            name: 'Disabled',
-            builder: (_) => const AppButton.primary(
-              label: 'NEW GAME',
-              icon: Icon(Icons.refresh, size: 16),
-            ),
-          ),
-        ],
-      ),
       WidgetbookComponent(
         name: 'Cells',
         useCases: GameCellVariant.values
@@ -205,8 +176,7 @@ WidgetbookUseCase _settingsUseCase(
     builder: (_) => SizedBox(
       width: 420,
       child: SettingsSheet(
-        theme: theme,
-        settings: AppSettings(difficulty: difficulty, skin: skin),
+        settings: AppSettings(theme: theme, difficulty: difficulty, skin: skin),
         onThemeChanged: (_) async {},
         onDifficultyChanged: (_) async {},
         onSkinChanged: (_) async {},

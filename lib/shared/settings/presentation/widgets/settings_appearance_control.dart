@@ -1,17 +1,5 @@
 part of 'package:xo_arena/shared/settings/presentation/widgets/settings_sheet.dart';
 
-class _AppearanceControl extends StatelessWidget {
-  const _AppearanceControl({required this.theme, required this.onThemeChanged});
-
-  final AppThemePreference theme;
-  final Future<void> Function(AppThemePreference value) onThemeChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ThemeToggle(theme: theme, onThemeChanged: onThemeChanged);
-  }
-}
-
 class _ThemeToggle extends StatelessWidget {
   const _ThemeToggle({required this.theme, required this.onThemeChanged});
 

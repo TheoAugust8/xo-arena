@@ -3,12 +3,12 @@ part of 'package:xo_arena/features/game/presentation/game_screen.dart';
 class _GameBoard extends StatelessWidget {
   const _GameBoard({
     required this.state,
-    required this.preferences,
+    required this.skin,
     required this.notifier,
   });
 
   final GameState state;
-  final AppSettings preferences;
+  final GameSymbolSkin skin;
   final GameNotifier notifier;
 
   @override
@@ -31,7 +31,7 @@ class _GameBoard extends StatelessWidget {
               return GameCell(
                 variant: _cellVariant(state, index),
                 mark: mark == null ? null : _symbolMarkFor(mark),
-                skin: preferences.skin,
+                skin: skin,
                 dimension: cellDimension,
                 onPressed:
                     mark == null &&

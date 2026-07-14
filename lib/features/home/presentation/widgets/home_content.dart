@@ -3,7 +3,7 @@ part of 'package:xo_arena/features/home/presentation/home_screen.dart';
 class _HomeContent extends StatelessWidget {
   const _HomeContent({
     required this.history,
-    required this.preferences,
+    required this.difficulty,
     required this.disableAnimations,
     required this.fillsAvailableHeight,
     required this.onSettings,
@@ -14,7 +14,7 @@ class _HomeContent extends StatelessWidget {
   });
 
   final AsyncValue<List<GameRecord>> history;
-  final AppSettings preferences;
+  final GameDifficulty difficulty;
   final bool disableAnimations;
   final bool fillsAvailableHeight;
   final VoidCallback onSettings;
@@ -55,7 +55,7 @@ class _HomeContent extends StatelessWidget {
         Text('DIFFICULTY', style: Theme.of(context).textTheme.labelMedium),
         const SizedBox(height: AppSpacing.space8),
         _DifficultyRail(
-          selected: preferences.difficulty,
+          selected: difficulty,
           disableAnimations: disableAnimations,
           onChanged: onDifficultyChanged,
         ),

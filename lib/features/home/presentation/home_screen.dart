@@ -7,10 +7,9 @@ import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
 import 'package:xo_arena/core/design_system/components/app_logo.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
-import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_overlay.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
-import 'package:xo_arena/shared/settings/presentation/widgets/settings_sheet.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record_stats.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
@@ -26,7 +25,9 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(gameRecordsProvider);
-    final preferences = ref.watch(settingsProvider);
+    final difficulty = ref.watch(
+      settingsProvider.select((settings) => settings.difficulty),
+    );
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
     return Scaffold(
@@ -38,11 +39,11 @@ class HomeScreen extends ConsumerWidget {
                 MediaQuery.textScalerOf(context).scale(1) > 1.3;
             final content = _HomeContent(
               history: history,
-              preferences: preferences,
+              difficulty: difficulty,
               disableAnimations: disableAnimations,
               fillsAvailableHeight: !usesScroll,
-              onSettings: () => _showSettings(context, ref),
-              onDifficultyChanged: (value) => _guardPersistence(
+              onSettings: () => showAppSettings(context),
+              onDifficultyChanged: (value) => guardSettingsPersistence(
                 context,
                 ref.read(settingsProvider.notifier).setDifficulty(value),
               ),
@@ -84,50 +85,5 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _showSettings(BuildContext context, WidgetRef ref) {
-    return showSettingsOverlay(
-      context: context,
-      builder: (sheetContext) => Consumer(
-        builder: (context, sheetRef, _) {
-          return SettingsSheet(
-            theme: sheetRef.watch(settingsProvider).theme,
-            settings: sheetRef.watch(settingsProvider),
-            onThemeChanged: (value) => _guardPersistence(
-              sheetContext,
-              sheetRef.read(settingsProvider.notifier).setTheme(value),
-            ),
-            onDifficultyChanged: (value) => _guardPersistence(
-              sheetContext,
-              sheetRef.read(settingsProvider.notifier).setDifficulty(value),
-            ),
-            onSkinChanged: (value) => _guardPersistence(
-              sheetContext,
-              sheetRef.read(settingsProvider.notifier).setSkin(value),
-            ),
-            onSoundEnabledChanged: (value) => _guardPersistence(
-              sheetContext,
-              sheetRef.read(settingsProvider.notifier).setSoundEnabled(value),
-            ),
-            onClose: () => Navigator.of(sheetContext).pop(),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _guardPersistence(
-    BuildContext context,
-    Future<void> operation,
-  ) async {
-    try {
-      await operation;
-    } on Object {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Unable to save settings.')));
-    }
   }
 }

@@ -89,7 +89,9 @@ void main() {
     final notifier = container.read(gameProvider.notifier);
     expect(await container.read(gameRecordsProvider.future), isEmpty);
 
-    await notifier.setDifficulty(GameDifficulty.medium);
+    await container
+        .read(settingsProvider.notifier)
+        .setDifficulty(GameDifficulty.medium);
     await _playTurn(notifier, 0);
     await _playTurn(notifier, 8);
     await _playTurn(notifier, 1);
@@ -122,7 +124,9 @@ void main() {
     addTearDown(subscription.close);
     final notifier = container.read(gameProvider.notifier);
 
-    await notifier.setDifficulty(GameDifficulty.medium);
+    await container
+        .read(settingsProvider.notifier)
+        .setDifficulty(GameDifficulty.medium);
     await _playTurn(notifier, 0);
     await _playTurn(notifier, 8);
     await _playTurn(notifier, 1);
@@ -144,7 +148,9 @@ void main() {
     final subscription = container.listen(gameProvider, (_, _) {});
     final notifier = container.read(gameProvider.notifier);
 
-    await notifier.setDifficulty(GameDifficulty.medium);
+    await container
+        .read(settingsProvider.notifier)
+        .setDifficulty(GameDifficulty.medium);
     await _playTurn(notifier, 0);
     await _playTurn(notifier, 8);
     await _playTurn(notifier, 1);
@@ -172,7 +178,9 @@ void main() {
     addTearDown(subscription.close);
     final notifier = container.read(gameProvider.notifier);
 
-    await notifier.setDifficulty(GameDifficulty.medium);
+    await container
+        .read(settingsProvider.notifier)
+        .setDifficulty(GameDifficulty.medium);
     await _playTurn(notifier, 0);
     await _playTurn(notifier, 8);
     await _playTurn(notifier, 1);
@@ -198,7 +206,9 @@ void main() {
 
     notifier.play(0);
     final activeGame = container.read(gameProvider).game;
-    await notifier.setDifficulty(GameDifficulty.easy);
+    await container
+        .read(settingsProvider.notifier)
+        .setDifficulty(GameDifficulty.easy);
 
     expect(container.read(gameProvider).game, activeGame);
     expect(container.read(settingsProvider).difficulty, GameDifficulty.easy);
@@ -217,7 +227,9 @@ void main() {
 
     notifier.play(0);
     final activeGame = container.read(gameProvider).game;
-    await notifier.setSkin(GameSymbolSkin.football);
+    await container
+        .read(settingsProvider.notifier)
+        .setSkin(GameSymbolSkin.football);
 
     expect(container.read(gameProvider).game, activeGame);
     expect(container.read(settingsProvider).skin, GameSymbolSkin.football);

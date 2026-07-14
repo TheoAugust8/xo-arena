@@ -104,7 +104,6 @@ class _SettingsOverlay extends StatelessWidget {
 
 class SettingsSheet extends StatelessWidget {
   const SettingsSheet({
-    required this.theme,
     required this.settings,
     required this.onThemeChanged,
     required this.onDifficultyChanged,
@@ -114,7 +113,6 @@ class SettingsSheet extends StatelessWidget {
     super.key,
   });
 
-  final AppThemePreference theme;
   final AppSettings settings;
   final Future<void> Function(AppThemePreference value) onThemeChanged;
   final Future<void> Function(GameDifficulty value) onDifficultyChanged;
@@ -168,8 +166,8 @@ class SettingsSheet extends StatelessWidget {
                   ),
                   const Divider(height: AppSpacing.space24),
                   const _SectionLabel('APPEARANCE'),
-                  _AppearanceControl(
-                    theme: theme,
+                  _ThemeToggle(
+                    theme: settings.theme,
                     onThemeChanged: onThemeChanged,
                   ),
                   const Divider(height: AppSpacing.space24),

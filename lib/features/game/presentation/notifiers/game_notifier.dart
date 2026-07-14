@@ -7,9 +7,7 @@ import 'package:xo_arena/features/game/domain/entities/game_move_exception.dart'
 import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
 import 'package:xo_arena/features/game/domain/usecases/complete_game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
-import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
-import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
 
 part 'game_notifier.g.dart';
@@ -68,14 +66,6 @@ class GameNotifier extends _$GameNotifier {
       isCpuThinking: false,
       historySaveFailed: false,
     );
-  }
-
-  Future<void> setDifficulty(GameDifficulty value) {
-    return ref.read(settingsProvider.notifier).setDifficulty(value);
-  }
-
-  Future<void> setSkin(GameSymbolSkin value) {
-    return ref.read(settingsProvider.notifier).setSkin(value);
   }
 
   void _scheduleCpu() {

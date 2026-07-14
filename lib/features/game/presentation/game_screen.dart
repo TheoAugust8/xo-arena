@@ -17,10 +17,10 @@ import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_status_badge.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
+import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
-import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_overlay.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
-import 'package:xo_arena/shared/settings/presentation/widgets/settings_sheet.dart';
 
 part 'widgets/game_layouts.dart';
 part 'widgets/game_header.dart';
@@ -34,7 +34,11 @@ class GameScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(gameProvider.notifier);
     final state = ref.watch(gameProvider);
-    final preferences = ref.watch(settingsProvider);
+    final gameSettings = ref.watch(
+      settingsProvider.select(
+        (settings) => (settings.difficulty, settings.skin),
+      ),
+    );
     ref.listen<GameState>(gameProvider, (previous, next) {
       if (!ref.read(settingsProvider).soundEnabled) return;
       final cue = gameSoundCueForTransition(previous, next);
@@ -63,7 +67,7 @@ class GameScreen extends ConsumerWidget {
             builder: (context, constraints) {
               final header = _GameHeader(
                 onBackPressed: () => context.go('/'),
-                onSettingsPressed: () => _showSettings(context, notifier),
+                onSettingsPressed: () => showAppSettings(context),
               );
               final textScale = MediaQuery.textScalerOf(context).scale(1);
               if (textScale > 1.3) {
@@ -77,7 +81,8 @@ class GameScreen extends ConsumerWidget {
                       child: _PortraitGameContent(
                         header: header,
                         state: state,
-                        preferences: preferences,
+                        difficulty: gameSettings.$1,
+                        skin: gameSettings.$2,
                         notifier: notifier,
                         compact: false,
                       ),
@@ -89,7 +94,8 @@ class GameScreen extends ConsumerWidget {
                 return _LandscapeGameContent(
                   header: header,
                   state: state,
-                  preferences: preferences,
+                  difficulty: gameSettings.$1,
+                  skin: gameSettings.$2,
                   notifier: notifier,
                 );
               }
@@ -108,7 +114,8 @@ class GameScreen extends ConsumerWidget {
                   child: _PortraitGameContent(
                     header: header,
                     state: state,
-                    preferences: preferences,
+                    difficulty: gameSettings.$1,
+                    skin: gameSettings.$2,
                     notifier: notifier,
                     compact: compact,
                   ),
@@ -119,44 +126,5 @@ class GameScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  void _showSettings(BuildContext context, GameNotifier notifier) {
-    showSettingsOverlay(
-      context: context,
-      builder: (sheetContext) => Consumer(
-        builder: (context, sheetRef, _) => SettingsSheet(
-          theme: sheetRef.watch(settingsProvider).theme,
-          settings: sheetRef.watch(settingsProvider),
-          onThemeChanged: (value) => _guardPersistence(
-            sheetContext,
-            sheetRef.read(settingsProvider.notifier).setTheme(value),
-          ),
-          onDifficultyChanged: (value) =>
-              _guardPersistence(sheetContext, notifier.setDifficulty(value)),
-          onSkinChanged: (value) =>
-              _guardPersistence(sheetContext, notifier.setSkin(value)),
-          onSoundEnabledChanged: (value) => _guardPersistence(
-            sheetContext,
-            sheetRef.read(settingsProvider.notifier).setSoundEnabled(value),
-          ),
-          onClose: () => Navigator.of(sheetContext).pop(),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _guardPersistence(
-    BuildContext context,
-    Future<void> operation,
-  ) async {
-    try {
-      await operation;
-    } on Object {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Unable to save settings.')));
-    }
   }
 }

@@ -19,9 +19,6 @@ void main() {
         .firstWhere((folder) => folder.name == 'Components')
         .children!
         .whereType<WidgetbookComponent>();
-    final buttons = components.firstWhere(
-      (component) => component.name == 'Buttons',
-    );
     final themeTokens = foundations.firstWhere(
       (component) => component.name == 'Theme tokens',
     );
@@ -32,11 +29,6 @@ void main() {
     expect(directories.map((directory) => directory.name), [
       'Foundations',
       'Components',
-    ]);
-    expect(buttons.useCases.map((useCase) => useCase.name), [
-      'Primary',
-      'Secondary',
-      'Disabled',
     ]);
     expect(themeTokens.useCases.map((useCase) => useCase.name), [
       'Dark',
@@ -49,7 +41,6 @@ void main() {
     expect(
       components.map((component) => component.name),
       containsAll([
-        'Buttons',
         'Cells',
         'Status badges',
         'Score',

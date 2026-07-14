@@ -4,14 +4,16 @@ class _PortraitGameContent extends StatelessWidget {
   const _PortraitGameContent({
     required this.header,
     required this.state,
-    required this.preferences,
+    required this.difficulty,
+    required this.skin,
     required this.notifier,
     required this.compact,
   });
 
   final Widget header;
   final GameState state;
-  final AppSettings preferences;
+  final GameDifficulty difficulty;
+  final GameSymbolSkin skin;
   final GameNotifier notifier;
   final bool compact;
 
@@ -29,15 +31,15 @@ class _PortraitGameContent extends StatelessWidget {
           cpuScore: state.cpuScore,
           playerMark: _symbolMarkFor(state.game.markFor(GamePlayer.human)),
           cpuMark: _symbolMarkFor(state.game.markFor(GamePlayer.cpu)),
-          skin: preferences.skin,
+          skin: skin,
         ),
         SizedBox(height: compact ? AppSpacing.space12 : AppSpacing.space24),
         const _MatchDivider(),
         SizedBox(height: compact ? AppSpacing.space8 : AppSpacing.space16),
-        _GameBoard(state: state, preferences: preferences, notifier: notifier),
+        _GameBoard(state: state, skin: skin, notifier: notifier),
         SizedBox(height: compact ? AppSpacing.space8 : AppSpacing.space16),
         _DifficultyBadge(
-          difficulty: preferences.difficulty,
+          difficulty: difficulty,
           isCpuThinking: state.isCpuThinking,
         ),
         SizedBox(height: compact ? AppSpacing.space8 : AppSpacing.space16),
@@ -53,13 +55,15 @@ class _LandscapeGameContent extends StatelessWidget {
   const _LandscapeGameContent({
     required this.header,
     required this.state,
-    required this.preferences,
+    required this.difficulty,
+    required this.skin,
     required this.notifier,
   });
 
   final Widget header;
   final GameState state;
-  final AppSettings preferences;
+  final GameDifficulty difficulty;
+  final GameSymbolSkin skin;
   final GameNotifier notifier;
 
   @override
@@ -79,7 +83,7 @@ class _LandscapeGameContent extends StatelessWidget {
                   dimension: panelDimension,
                   child: _GameBoard(
                     state: state,
-                    preferences: preferences,
+                    skin: skin,
                     notifier: notifier,
                   ),
                 ),
@@ -101,10 +105,10 @@ class _LandscapeGameContent extends StatelessWidget {
                         cpuMark: _symbolMarkFor(
                           state.game.markFor(GamePlayer.cpu),
                         ),
-                        skin: preferences.skin,
+                        skin: skin,
                       ),
                       _DifficultyBadge(
-                        difficulty: preferences.difficulty,
+                        difficulty: difficulty,
                         isCpuThinking: state.isCpuThinking,
                       ),
                       _RestartButton(

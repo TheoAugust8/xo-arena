@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
-import 'package:xo_arena/core/design_system/components/app_button.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_status_badge.dart';
@@ -155,23 +154,6 @@ void main() {
     }
   });
 
-  testWidgets('renders button variants and disabled state', (tester) async {
-    await tester.pumpWidget(
-      themed(
-        Column(
-          children: [
-            AppButton.primary(label: 'NEW GAME', onPressed: () {}),
-            AppButton.secondary(label: 'NEW GAME', onPressed: () {}),
-            const AppButton.primary(label: 'NEW GAME'),
-          ],
-        ),
-      ),
-    );
-
-    expect(find.byType(AppButton), findsNWidgets(3));
-    expect(find.text('NEW GAME'), findsNWidgets(3));
-  });
-
   testWidgets('renders score component', (tester) async {
     await tester.pumpWidget(
       themed(
@@ -291,8 +273,8 @@ void main() {
     await tester.pumpWidget(
       themed(
         SettingsSheet(
-          theme: AppThemePreference.dark,
           settings: const AppSettings(
+            theme: AppThemePreference.dark,
             difficulty: GameDifficulty.medium,
             skin: GameSymbolSkin.classic,
           ),
@@ -386,8 +368,9 @@ void main() {
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
-            theme: AppThemePreference.dark,
-            settings: AppSettings.defaults,
+            settings: AppSettings.defaults.copyWith(
+              theme: AppThemePreference.dark,
+            ),
             onThemeChanged: (_) async {},
             onDifficultyChanged: (_) async {},
             onSkinChanged: (_) async {},
@@ -440,8 +423,9 @@ void main() {
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
-            theme: AppThemePreference.dark,
-            settings: AppSettings.defaults,
+            settings: AppSettings.defaults.copyWith(
+              theme: AppThemePreference.dark,
+            ),
             onThemeChanged: (_) async {},
             onDifficultyChanged: (_) async {},
             onSkinChanged: (_) async {},
@@ -491,8 +475,9 @@ void main() {
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
-            theme: AppThemePreference.dark,
-            settings: AppSettings.defaults,
+            settings: AppSettings.defaults.copyWith(
+              theme: AppThemePreference.dark,
+            ),
             onThemeChanged: (value) async => selectedTheme = value,
             onDifficultyChanged: (value) async => selectedDifficulty = value,
             onSkinChanged: (value) async => selectedSkin = value,
@@ -523,8 +508,9 @@ void main() {
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
-            theme: AppThemePreference.dark,
-            settings: AppSettings.defaults,
+            settings: AppSettings.defaults.copyWith(
+              theme: AppThemePreference.dark,
+            ),
             onThemeChanged: (_) async {},
             onDifficultyChanged: (_) async {},
             onSkinChanged: (_) async {},
@@ -561,7 +547,6 @@ void main() {
           ),
           child: Scaffold(
             body: SettingsSheet(
-              theme: AppThemePreference.system,
               settings: AppSettings.defaults,
               onThemeChanged: _ignoreTheme,
               onDifficultyChanged: _ignoreDifficulty,
