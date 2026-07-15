@@ -1,3 +1,7 @@
+// AppProviderScope owns the root ProviderScope. The lint only recognizes a
+// ProviderScope passed directly to runApp as a root scope.
+// ignore_for_file: riverpod_lint/scoped_providers_should_specify_dependencies
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';

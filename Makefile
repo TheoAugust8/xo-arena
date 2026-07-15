@@ -96,7 +96,7 @@ format-check: ensure-fvm
 
 analyze: ensure-fvm
 	$(call announce,Analyzing project)
-	@$(FVM) flutter analyze
+	@$(FVM) dart analyze
 
 test: ensure-fvm
 	$(call announce,Running tests)
