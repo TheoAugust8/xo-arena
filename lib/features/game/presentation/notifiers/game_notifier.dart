@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:xo_arena/features/game/domain/entities/game.dart';
@@ -7,10 +8,17 @@ import 'package:xo_arena/features/game/domain/entities/game_move_exception.dart'
 import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
 import 'package:xo_arena/features/game/domain/usecases/complete_game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
+import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
 
 part 'game_notifier.g.dart';
+
+typedef CpuStrategyResolver = CpuStrategy Function(GameDifficulty difficulty);
+
+final cpuStrategyResolverProvider = Provider<CpuStrategyResolver>(
+  (ref) => CpuStrategyFactory.forDifficulty,
+);
 
 @riverpod
 Duration cpuTurnDelay(Ref ref) => const Duration(milliseconds: 900);
@@ -76,9 +84,9 @@ class GameNotifier extends _$GameNotifier {
     _cpuTimer?.cancel();
     _cpuTimer = Timer(ref.read(cpuTurnDelayProvider), () {
       if (generation != _generation || state.game.isComplete) return;
-      final move = CpuStrategyFactory.forDifficulty(
-        ref.read(settingsProvider).difficulty,
-      ).chooseMove(state.game);
+      final difficulty = ref.read(settingsProvider).difficulty;
+      final strategy = ref.read(cpuStrategyResolverProvider)(difficulty);
+      final move = strategy.chooseMove(state.game);
       final next = state.game.applyMove(by: GamePlayer.cpu, index: move);
       state = state.copyWith(
         game: next,

@@ -46,7 +46,11 @@ final class MediumCpuStrategy extends _CpuStrategyBase {
 }
 
 final class MinimaxCpuStrategy extends _CpuStrategyBase {
-  const MinimaxCpuStrategy();
+  const MinimaxCpuStrategy({this.random, this.mistakeRate = 0.1})
+    : assert(mistakeRate >= 0 && mistakeRate <= 1);
+
+  final Random? random;
+  final double mistakeRate;
 
   @override
   int chooseMove(Game game) {
@@ -55,9 +59,14 @@ final class MinimaxCpuStrategy extends _CpuStrategyBase {
     final humanMark = game.markFor(GamePlayer.human);
     final availableMoves = board.availableMoves;
     requireAvailableMove(availableMoves);
+    final immediateWin = winningMove(board, cpuMark);
+    if (immediateWin != null) return immediateWin;
+    final immediateBlock = winningMove(board, humanMark);
+    if (immediateBlock != null) return immediateBlock;
 
     var bestScore = -100;
     var bestMove = ordered(availableMoves).first;
+    final scoredMoves = <({int move, int score})>[];
     for (final move in ordered(availableMoves)) {
       final next = board.placeMark(move, cpuMark);
       final score = _minimax(
@@ -67,9 +76,20 @@ final class MinimaxCpuStrategy extends _CpuStrategyBase {
         isCpuTurn: false,
         depth: 0,
       );
+      scoredMoves.add((move: move, score: score));
       if (score > bestScore) {
         bestScore = score;
         bestMove = move;
+      }
+    }
+
+    final weakerMoves = scoredMoves
+        .where((candidate) => candidate.score < bestScore)
+        .toList(growable: false);
+    if (weakerMoves.isNotEmpty && mistakeRate > 0) {
+      final randomSource = random ?? Random();
+      if (randomSource.nextDouble() < mistakeRate) {
+        return weakerMoves[randomSource.nextInt(weakerMoves.length)].move;
       }
     }
     return bestMove;

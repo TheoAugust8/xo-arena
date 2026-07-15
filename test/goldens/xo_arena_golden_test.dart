@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xo_arena/features/game/domain/entities/game.dart';
+import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
 import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/game_screen.dart';
+import 'package:xo_arena/features/game/presentation/notifiers/game_notifier.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
+import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/history/presentation/history_screen.dart';
 import 'package:xo_arena/features/home/presentation/home_screen.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
@@ -69,6 +73,38 @@ void main() {
     );
   });
 
+  testWidgets('matches completed Human win', (tester) async {
+    final repository = _MemoryGameRecordRepository([]);
+    final strategy = _ScriptedCpuStrategy([3, 4]);
+    await pumpGolden(
+      tester,
+      ProviderScope(
+        overrides: [
+          cpuStrategyResolverProvider.overrideWithValue((_) => strategy),
+          cpuTurnDelayProvider.overrideWithValue(Duration.zero),
+          gameRecordRepositoryProvider.overrideWithValue(repository),
+          settingsRepositoryProvider.overrideWithValue(
+            _MemorySettingsRepository(),
+          ),
+          gameSoundPlayerProvider.overrideWithValue(_SilentGameSoundPlayer()),
+        ],
+        child: goldenApp(home: const GameScreen()),
+      ),
+    );
+
+    for (final move in [0, 1, 2]) {
+      await tester.tap(find.byType(GameCell).at(move));
+      await tester.pumpAndSettle();
+    }
+
+    expect(strategy.remainingMoves, isEmpty);
+    expect(repository.records, hasLength(1));
+    await expectLater(
+      find.byKey(goldenSurfaceKey),
+      matchesGoldenFile('files/game_human_win.png'),
+    );
+  });
+
   testWidgets('matches populated History', (tester) async {
     final repository = _MemoryGameRecordRepository([
       _record(
@@ -80,7 +116,6 @@ void main() {
       _record(
         id: 'loss',
         outcome: GameOutcome.playerTwoWin,
-        difficulty: GameDifficulty.hard,
         skin: GameSymbolSkin.football,
       ),
       _record(
@@ -214,6 +249,8 @@ final class _MemoryGameRecordRepository implements GameRecordRepository {
 
   final List<GameRecord> _records;
 
+  List<GameRecord> get records => List.unmodifiable(_records);
+
   @override
   Future<void> clear() async => _records.clear();
 
@@ -227,6 +264,23 @@ final class _MemoryGameRecordRepository implements GameRecordRepository {
 
   @override
   Future<void> save(GameRecord record) async => _records.add(record);
+}
+
+final class _ScriptedCpuStrategy implements CpuStrategy {
+  _ScriptedCpuStrategy(Iterable<int> moves) : _moves = [...moves];
+
+  final List<int> _moves;
+
+  List<int> get remainingMoves => List.unmodifiable(_moves);
+
+  @override
+  int chooseMove(Game game) {
+    final move = _moves.removeAt(0);
+    if (!game.board.availableMoves.contains(move)) {
+      throw StateError('Scripted CPU move $move is unavailable.');
+    }
+    return move;
+  }
 }
 
 GameRecord _record({
