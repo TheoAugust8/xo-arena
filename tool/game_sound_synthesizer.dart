@@ -8,8 +8,9 @@ abstract final class GameSoundSynthesizer {
 
   static Uint8List synthesize(GameSoundCue cue) {
     final segments = switch (cue) {
-      GameSoundCue.playerMove => const [_Tone(720, 0.075, 0.7)],
-      GameSoundCue.cpuMove => const [_Tone(360, 0.09, 0.62)],
+      // Mobile web output can swallow sub 100 ms clips during startup latency.
+      GameSoundCue.playerMove => const [_Tone(720, 0.18, 0.7)],
+      GameSoundCue.cpuMove => const [_Tone(360, 0.2, 0.62)],
       GameSoundCue.win => const [
         _Tone(523.25, 0.11, 0.58),
         _Tone(659.25, 0.11, 0.62),

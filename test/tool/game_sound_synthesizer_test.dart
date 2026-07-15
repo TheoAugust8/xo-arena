@@ -32,4 +32,14 @@ void main() {
       expect(duration, lessThan(0.55));
     }
   });
+
+  test('keeps move cues audible through mobile web startup latency', () {
+    for (final cue in [GameSoundCue.playerMove, GameSoundCue.cpuMove]) {
+      final bytes = GameSoundSynthesizer.synthesize(cue);
+      final sampleCount = (bytes.length - 44) ~/ 2;
+      final duration = sampleCount / GameSoundSynthesizer.sampleRate;
+
+      expect(duration, greaterThanOrEqualTo(0.16));
+    }
+  });
 }
