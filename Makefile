@@ -19,7 +19,7 @@ define announce
 	@printf '%b%s%b%b%s%b%b%s%b %b%s%b\n' '$(XO_BOLD)$(XO_RED)' 'X' '$(XO_RESET)' '$(XO_BOLD)$(XO_LIGHT)' 'O' '$(XO_RESET)' '$(XO_BOLD)$(XO_RED)' ' ARENA' '$(XO_RESET)' '$(XO_MUTED)' '· $(1)' '$(XO_RESET)'
 endef
 
-.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test goldens update-goldens generate generate-watch clean check
+.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test goldens update-goldens sounds generate generate-watch clean check
 
 help:
 	@printf '\n%b%s%b%b%s%b%b%s%b\n' '$(XO_BOLD)$(XO_RED)' 'X' '$(XO_RESET)' '$(XO_BOLD)$(XO_LIGHT)' 'O' '$(XO_RESET)' '$(XO_BOLD)$(XO_RED)' ' ARENA' '$(XO_RESET)'
@@ -34,6 +34,7 @@ help:
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make test' '$(XO_RESET)' 'Run tests'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make goldens' '$(XO_RESET)' 'Run visual regression tests'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make update-goldens' '$(XO_RESET)' 'Update inspected visual baselines'
+	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make sounds' '$(XO_RESET)' 'Regenerate synthesized game sounds'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make generate' '$(XO_RESET)' 'Run code generation'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make generate-watch' '$(XO_RESET)' 'Watch generated sources'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make clean' '$(XO_RESET)' 'Clean Flutter build and get dependencies'
@@ -107,8 +108,13 @@ update-goldens: ensure-fvm
 	$(call announce,Updating visual regression baselines)
 	@$(FVM) flutter test --update-goldens test/goldens/xo_arena_golden_test.dart
 
+sounds: ensure-fvm
+	$(call announce,Generating game sounds)
+	@$(FVM) dart run tool/generate_game_sounds.dart
+
 generate: ensure-fvm
 	$(call announce,Generating Dart code)
+	@$(FVM) flutter gen-l10n
 	@$(FVM) dart run build_runner build
 
 generate-watch: ensure-fvm

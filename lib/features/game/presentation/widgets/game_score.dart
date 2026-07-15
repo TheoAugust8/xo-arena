@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:xo_arena/core/design_system/app_radius.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 
@@ -42,7 +43,7 @@ class GameScore extends StatelessWidget {
             Expanded(
               child: _ScoreSide(
                 mark: playerMark,
-                label: 'YOU',
+                label: context.l10n.you,
                 value: playerScore,
                 skin: skin,
                 isHuman: true,
@@ -56,7 +57,7 @@ class GameScore extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'VS',
+                    context.l10n.versus,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.8,
@@ -70,7 +71,7 @@ class GameScore extends StatelessWidget {
             Expanded(
               child: _ScoreSide(
                 mark: cpuMark,
-                label: 'CPU',
+                label: context.l10n.cpu,
                 value: cpuScore,
                 skin: skin,
                 isHuman: false,

@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:xo_arena/core/constants/app_routes.dart';
 import 'package:xo_arena/features/game/presentation/game_screen.dart';
 import 'package:xo_arena/features/history/presentation/history_screen.dart';
 import 'package:xo_arena/features/home/presentation/home_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: AppRoutes.home,
   routes: [
     GoRoute(
-      path: '/',
+      path: AppRoutes.home,
       pageBuilder: (context, state) =>
           _page(state: state, child: const HomeScreen(), slide: false),
     ),
     GoRoute(
-      path: '/game',
+      path: AppRoutes.game,
       pageBuilder: (context, state) =>
           _page(state: state, child: const GameScreen()),
     ),
     GoRoute(
-      path: '/history',
+      path: AppRoutes.history,
       pageBuilder: (context, state) =>
           _page(state: state, child: const HistoryScreen()),
     ),

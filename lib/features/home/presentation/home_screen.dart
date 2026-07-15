@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:xo_arena/core/constants/app_routes.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
 import 'package:xo_arena/core/design_system/components/app_logo.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_overlay.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
@@ -47,8 +49,8 @@ class HomeScreen extends ConsumerWidget {
                 context,
                 ref.read(settingsProvider.notifier).setDifficulty(value),
               ),
-              onPlay: () => context.go('/game'),
-              onHistory: () => context.go('/history'),
+              onPlay: () => context.go(AppRoutes.game),
+              onHistory: () => context.go(AppRoutes.history),
               onRetryHistory: () => ref.invalidate(gameRecordsProvider),
             );
 

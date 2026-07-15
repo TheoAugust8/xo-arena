@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:xo_arena/core/design_system/app_radius.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 
@@ -53,7 +54,7 @@ class GameCell extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      label: resolvedMark?.name.toUpperCase() ?? 'Empty cell',
+      label: resolvedMark?.name.toUpperCase() ?? context.l10n.emptyCell,
       onTap: enabled ? onPressed : null,
       excludeSemantics: true,
       child: Opacity(

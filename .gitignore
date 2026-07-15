@@ -7,10 +7,12 @@
 .pub/
 build/
 coverage/
+test/goldens/failures/
 
 # Dart code generation
 *.freezed.dart
 *.g.dart
+lib/l10n/generated/
 
 # FVM local workspace
 .fvm/

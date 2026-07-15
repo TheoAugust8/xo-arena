@@ -59,7 +59,7 @@ class _PokerSymbolPainter extends CustomPainter {
         text: 'A',
         style: TextStyle(
           color: color,
-          fontFamily: 'Barlow Condensed',
+          fontFamily: AppFonts.display,
           fontSize: width * 0.34,
           fontWeight: FontWeight.w900,
           height: 0.8,

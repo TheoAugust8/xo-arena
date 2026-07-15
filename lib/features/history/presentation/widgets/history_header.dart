@@ -17,7 +17,7 @@ class _HistoryHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     final backButton = AppIconControl(
-      tooltip: 'Back to Home',
+      tooltip: context.l10n.backToHome,
       icon: Icons.chevron_left,
       visualSize: 36,
       onPressed: onBack,
@@ -25,7 +25,7 @@ class _HistoryHeader extends StatelessWidget {
     final clearButton = hasRecords
         ? AppIconControl(
             key: const Key('clear-history'),
-            tooltip: 'Clear match history',
+            tooltip: context.l10n.clearMatchHistory,
             icon: Icons.delete_outline_rounded,
             onPressed: isMutating ? null : onClear,
           )
@@ -68,10 +68,10 @@ class _HistoryTitle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'XO ARENA',
+          context.l10n.brandName,
           style: TextStyle(
             color: tokens.primary,
-            fontFamily: 'Inter',
+            fontFamily: AppFonts.body,
             fontSize: 9,
             height: 1,
             fontWeight: FontWeight.w700,
@@ -80,10 +80,10 @@ class _HistoryTitle extends StatelessWidget {
         ),
         const SizedBox(height: 3),
         Text(
-          'Match History',
+          context.l10n.matchHistory,
           style: TextStyle(
             color: tokens.foreground,
-            fontFamily: 'Barlow Condensed',
+            fontFamily: AppFonts.display,
             fontSize: 22,
             height: 1.05,
             fontWeight: FontWeight.w900,

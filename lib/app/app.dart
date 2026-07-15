@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xo_arena/app/router.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/features/launch/presentation/startup_launch.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 
@@ -13,7 +14,9 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'XO Arena',
+      onGenerateTitle: (context) => context.l10n.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ref

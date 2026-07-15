@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/features/launch/presentation/startup_launch.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 
 void main() {
   testWidgets('skips the launch sequence when animations are disabled', (
@@ -10,6 +11,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: const MediaQuery(
           data: MediaQueryData(disableAnimations: true),
@@ -27,6 +30,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: const StartupLaunch(child: Text('Home content')),
       ),
@@ -36,11 +41,28 @@ void main() {
     expect(find.text('Home content'), findsNothing);
   });
 
+  testWidgets('reveals application content within two seconds', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: AppTheme.dark,
+        home: const StartupLaunch(child: Text('Home content')),
+      ),
+    );
+
+    await tester.pump(const Duration(seconds: 2));
+
+    expect(find.text('Home content'), findsOneWidget);
+  });
+
   testWidgets('shows a visible loading track and animates its fill', (
     tester,
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: const StartupLaunch(child: Text('Home content')),
       ),
@@ -54,7 +76,7 @@ void main() {
 
     expect(tester.getSize(trackFinder), const Size(88, 3));
 
-    await tester.pump(const Duration(milliseconds: 1900));
+    await tester.pump(const Duration(milliseconds: 1100));
 
     final fill = tester.widget<FractionallySizedBox>(fillFinder);
     expect(fill.widthFactor, greaterThan(0));
@@ -62,7 +84,7 @@ void main() {
     expect(tester.getSize(fillPaintFinder).width, greaterThan(0));
     expect(tester.getSize(fillPaintFinder).width, lessThan(88));
 
-    await tester.pump(const Duration(milliseconds: 850));
+    await tester.pump(const Duration(milliseconds: 550));
 
     final completedFill = tester.widget<FractionallySizedBox>(fillFinder);
     expect(completedFill.widthFactor, closeTo(1, 0.01));
@@ -73,6 +95,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: const StartupLaunch(child: Text('Home content')),
       ),
@@ -82,10 +106,10 @@ void main() {
       const ValueKey('launch_loading_indicator'),
     );
 
-    await tester.pump(const Duration(milliseconds: 1600));
+    await tester.pump(const Duration(milliseconds: 1000));
     final start = tester.getCenter(indicatorFinder);
 
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 400));
     final later = tester.getCenter(indicatorFinder);
 
     expect(later.dx, greaterThan(start.dx + 20));

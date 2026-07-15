@@ -32,17 +32,20 @@ class _HomeContent extends StatelessWidget {
         _Reveal(enabled: !disableAnimations, child: const AppLogo(size: 96)),
         const SizedBox(height: AppSpacing.space24),
         Text(
-          'ARENA',
+          context.l10n.brandArena,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: tokens.primary,
             letterSpacing: 3,
           ),
         ),
         const SizedBox(height: AppSpacing.space8),
-        Text('XO ARENA', style: Theme.of(context).textTheme.displayMedium),
+        Text(
+          context.l10n.brandName,
+          style: Theme.of(context).textTheme.displayMedium,
+        ),
         const SizedBox(height: AppSpacing.space8),
         Text(
-          'Prove your edge against the machine.',
+          context.l10n.brandTagline,
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
@@ -52,7 +55,10 @@ class _HomeContent extends StatelessWidget {
     );
     final actions = Column(
       children: [
-        Text('DIFFICULTY', style: Theme.of(context).textTheme.labelMedium),
+        Text(
+          context.l10n.difficulty,
+          style: Theme.of(context).textTheme.labelMedium,
+        ),
         const SizedBox(height: AppSpacing.space8),
         _DifficultyRail(
           selected: difficulty,
@@ -66,7 +72,7 @@ class _HomeContent extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: onPlay,
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('PLAY NOW'),
+            label: Text(context.l10n.playNow),
           ),
         ),
         const SizedBox(height: AppSpacing.space12),
@@ -76,7 +82,7 @@ class _HomeContent extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: onHistory,
             icon: const Icon(Icons.bar_chart_rounded),
-            label: const Text('VIEW HISTORY'),
+            label: Text(context.l10n.viewHistory),
           ),
         ),
       ],
@@ -90,7 +96,7 @@ class _HomeContent extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: AppIconControl(
               key: const ValueKey('home_settings_button'),
-              tooltip: 'Settings',
+              tooltip: context.l10n.settings,
               icon: Icons.settings_outlined,
               onPressed: onSettings,
             ),

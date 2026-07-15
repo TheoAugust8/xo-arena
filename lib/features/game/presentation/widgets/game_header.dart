@@ -16,7 +16,7 @@ class _GameHeader extends StatelessWidget {
       children: [
         AppIconControl(
           key: const ValueKey('game_back_button'),
-          tooltip: 'Back to Home',
+          tooltip: context.l10n.backToHome,
           icon: Icons.chevron_left,
           visualSize: 36,
           iconSize: 20,
@@ -28,9 +28,9 @@ class _GameHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'ARENA',
+                context.l10n.brandArena,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppFonts.body,
                   color: tokens.primary,
                   fontSize: 9,
                   height: 1,
@@ -40,9 +40,9 @@ class _GameHeader extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                'XO ARENA',
+                context.l10n.brandName,
                 style: TextStyle(
-                  fontFamily: 'Barlow Condensed',
+                  fontFamily: AppFonts.display,
                   color: tokens.foreground,
                   fontSize: 24,
                   height: 1.05,
@@ -55,7 +55,7 @@ class _GameHeader extends StatelessWidget {
         ),
         AppIconControl(
           key: const ValueKey('game_settings_button'),
-          tooltip: 'Settings',
+          tooltip: context.l10n.settings,
           icon: Icons.settings_outlined,
           visualSize: 40,
           iconSize: 18,

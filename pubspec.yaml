@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   audioplayers: ^6.8.1
   # Supplies the Cupertino icon font used by Widgetbook device frames.
@@ -37,6 +39,7 @@ dependencies:
   flutter_riverpod: ^3.3.2
   freezed_annotation: ^3.1.0
   go_router: ^17.3.0
+  intl: any
   json_annotation: ^4.12.0
   riverpod_annotation: ^4.0.3
   shared_preferences: ^2.5.5
@@ -64,6 +67,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

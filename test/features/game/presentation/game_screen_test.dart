@@ -5,6 +5,7 @@ import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/features/game/presentation/game_screen.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
 import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
@@ -15,7 +16,12 @@ void main() {
   testWidgets('renders playable board and session score', (tester) async {
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -26,7 +32,7 @@ void main() {
     expect(find.byTooltip('Back to Home'), findsOneWidget);
     expect(find.byKey(const ValueKey('game_settings_button')), findsOneWidget);
     expect(find.byKey(const ValueKey('game_difficulty_badge')), findsOneWidget);
-    expect(find.bySemanticsLabel('hard difficulty'), findsOneWidget);
+    expect(find.bySemanticsLabel('Hard difficulty'), findsOneWidget);
   });
 
   testWidgets('expands board cells across page content width', (tester) async {
@@ -35,7 +41,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -51,7 +62,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -70,7 +86,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -88,7 +109,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -112,7 +138,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -138,7 +169,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -163,6 +199,8 @@ void main() {
       await tester.pumpWidget(
         _GameTestScope(
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: AppTheme.dark,
             home: MediaQuery(
               data: const MediaQueryData(
@@ -183,7 +221,12 @@ void main() {
   testWidgets('locks player input while CPU chooses move', (tester) async {
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -204,7 +247,12 @@ void main() {
     await tester.pumpWidget(
       _GameTestScope(
         gameSoundPlayer: sounds,
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 
@@ -220,7 +268,12 @@ void main() {
       _GameTestScope(
         gameSoundPlayer: sounds,
         settings: AppSettings.defaults.copyWith(soundEnabled: false),
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
     await tester.pump(const Duration(milliseconds: 100));
@@ -237,7 +290,12 @@ void main() {
 
     await tester.pumpWidget(
       _GameTestScope(
-        child: MaterialApp(theme: AppTheme.dark, home: const GameScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const GameScreen(),
+        ),
       ),
     );
 

@@ -10,7 +10,10 @@ class _MatchDivider extends StatelessWidget {
         const Expanded(child: Divider()),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space12),
-          child: Text('MATCH', style: Theme.of(context).textTheme.labelMedium),
+          child: Text(
+            context.l10n.match,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
         ),
         const Expanded(child: Divider()),
       ],
@@ -31,7 +34,7 @@ class _RestartButton extends StatelessWidget {
         key: const ValueKey('game_new_game_button'),
         onPressed: onPressed,
         icon: const Icon(Icons.refresh, size: 16),
-        label: const Text('NEW GAME'),
+        label: Text(context.l10n.newGame),
       ),
     );
   }
@@ -66,7 +69,7 @@ class _DifficultyBadge extends StatelessWidget {
       GameDifficulty.hard => tokens.primary,
     };
     return Semantics(
-      label: '${difficulty.name} difficulty',
+      label: context.l10n.difficultyOption(difficulty.label(context.l10n)),
       excludeSemantics: true,
       child: DecoratedBox(
         key: const ValueKey('game_difficulty_badge'),
@@ -86,7 +89,7 @@ class _DifficultyBadge extends StatelessWidget {
               GameActivityDot(color: color, size: 6, isPulsing: isCpuThinking),
               const SizedBox(width: 6),
               Text(
-                difficulty.name.toUpperCase(),
+                difficulty.label(context.l10n).toUpperCase(),
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   color: tokens.mutedForeground,
                   fontSize: 10,

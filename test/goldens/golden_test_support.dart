@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 
 const goldenSurfaceKey = ValueKey('golden_surface');
 const goldenSurfaceSize = Size(390, 844);
@@ -63,6 +64,8 @@ Future<void> pumpGolden(WidgetTester tester, Widget child) async {
 
 Widget goldenApp({required Widget home}) {
   return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     debugShowCheckedModeBanner: false,
     theme: AppTheme.dark.copyWith(platform: TargetPlatform.android),
     builder: (context, child) {

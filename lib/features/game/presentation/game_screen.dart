@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:xo_arena/core/constants/app_routes.dart';
+import 'package:xo_arena/core/design_system/app_fonts.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
@@ -16,11 +18,13 @@ import 'package:xo_arena/features/game/presentation/providers/game_sound_provide
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_status_badge.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_overlay.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 
 part 'widgets/game_layouts.dart';
 part 'widgets/game_header.dart';
@@ -52,9 +56,7 @@ class GameScreen extends ConsumerWidget {
     ) {
       if (next && previous != true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Game completed, but history could not be saved.'),
-          ),
+          SnackBar(content: Text(context.l10n.gameHistorySaveFailure)),
         );
       }
     });
@@ -66,7 +68,7 @@ class GameScreen extends ConsumerWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final header = _GameHeader(
-                onBackPressed: () => context.go('/'),
+                onBackPressed: () => context.go(AppRoutes.home),
                 onSettingsPressed: () => showAppSettings(context),
               );
               final textScale = MediaQuery.textScalerOf(context).scale(1);

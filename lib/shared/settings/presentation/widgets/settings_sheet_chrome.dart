@@ -9,7 +9,7 @@ class _SoundButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final label = enabled ? 'Turn sound off' : 'Turn sound on';
+    final label = enabled ? context.l10n.soundOff : context.l10n.soundOn;
     return Tooltip(
       message: label,
       child: Semantics(
@@ -80,7 +80,7 @@ class _CloseButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Close settings',
+      label: context.l10n.closeSettings,
       child: SizedBox(
         width: 48,
         height: 48,
@@ -122,7 +122,7 @@ class _SectionLabel extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppFonts.body,
             color: context.appTokens.mutedForeground,
             fontSize: 9,
             height: 1,

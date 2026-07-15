@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/features/home/presentation/home_screen.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
@@ -142,6 +143,8 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark,
           home: const MediaQuery(
             data: MediaQueryData(
@@ -177,6 +180,8 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark,
           home: const MediaQuery(
             data: MediaQueryData(
@@ -205,7 +210,12 @@ void main() {
             _FailingSettingsRepository(),
           ),
         ],
-        child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          routerConfig: router,
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -252,7 +262,12 @@ Future<void> _pumpHome(
           _MemorySettingsRepository(),
         ),
       ],
-      child: MaterialApp.router(theme: AppTheme.dark, routerConfig: router),
+      child: MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: AppTheme.dark,
+        routerConfig: router,
+      ),
     ),
   );
   await tester.pumpAndSettle();

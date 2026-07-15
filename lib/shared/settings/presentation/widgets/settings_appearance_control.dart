@@ -9,7 +9,7 @@ class _ThemeToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Theme, ${theme.name} selected',
+      label: context.l10n.themeSelected(_themeLabel(context, theme)),
       child: Container(
         key: const ValueKey('settings_theme_toggle'),
         height: 48,
@@ -23,7 +23,7 @@ class _ThemeToggle extends StatelessWidget {
           children: [
             Expanded(
               child: _ThemeOption(
-                label: 'System',
+                label: context.l10n.systemTheme,
                 icon: Icons.phone_iphone_outlined,
                 selected: theme == AppThemePreference.system,
                 onPressed: () =>
@@ -32,7 +32,7 @@ class _ThemeToggle extends StatelessWidget {
             ),
             Expanded(
               child: _ThemeOption(
-                label: 'Dark',
+                label: context.l10n.darkTheme,
                 icon: Icons.nightlight_round,
                 selected: theme == AppThemePreference.dark,
                 onPressed: () =>
@@ -41,7 +41,7 @@ class _ThemeToggle extends StatelessWidget {
             ),
             Expanded(
               child: _ThemeOption(
-                label: 'Light',
+                label: context.l10n.lightTheme,
                 icon: Icons.light_mode_outlined,
                 selected: theme == AppThemePreference.light,
                 onPressed: () =>
@@ -78,7 +78,9 @@ class _ThemeOption extends StatelessWidget {
       key: ValueKey('settings_theme_${label.toLowerCase()}'),
       button: true,
       selected: selected,
-      label: '$label theme${selected ? ', selected' : ''}',
+      label: selected
+          ? context.l10n.themeOptionSelected(label)
+          : context.l10n.themeOption(label),
       onTap: onPressed,
       excludeSemantics: true,
       child: Material(
@@ -128,4 +130,12 @@ class _ThemeOption extends StatelessWidget {
       ),
     );
   }
+}
+
+String _themeLabel(BuildContext context, AppThemePreference theme) {
+  return switch (theme) {
+    AppThemePreference.system => context.l10n.systemTheme,
+    AppThemePreference.dark => context.l10n.darkTheme,
+    AppThemePreference.light => context.l10n.lightTheme,
+  };
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';
 import 'package:xo_arena/shared/settings/presentation/widgets/settings_sheet.dart';
 
@@ -42,6 +43,6 @@ Future<void> guardSettingsPersistence(
     if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Unable to save settings.')));
+    ).showSnackBar(SnackBar(content: Text(context.l10n.unableToSaveSettings)));
   }
 }

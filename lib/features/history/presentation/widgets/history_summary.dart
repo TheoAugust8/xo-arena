@@ -12,50 +12,65 @@ class _SummaryBar extends StatelessWidget {
         ? 84.0
         : 64.0;
     final values = [
-      (stats.wins, 'W', tokens.win),
-      (stats.draws, 'D', tokens.draw),
-      (stats.losses, 'L', tokens.primary),
+      (stats.wins, context.l10n.historyWinsShort, tokens.win),
+      (stats.draws, context.l10n.historyDrawsShort, tokens.draw),
+      (stats.losses, context.l10n.historyLossesShort, tokens.primary),
     ];
-    return SizedBox(
-      key: const ValueKey('history_summary'),
-      height: summaryHeight,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: tokens.surface,
-          border: Border.all(color: tokens.border),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            for (var index = 0; index < values.length; index++) ...[
-              Expanded(
-                child: _SummaryValue(
-                  value: values[index].$1,
-                  label: values[index].$2,
-                  color: values[index].$3,
-                ),
-              ),
-              if (index < values.length - 1)
-                VerticalDivider(width: 1, thickness: 1, color: tokens.border),
-            ],
-            SizedBox(
-              width: 72,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: tokens.primary,
-                  borderRadius: const BorderRadius.horizontal(
-                    right: Radius.circular(15),
+    return Semantics(
+      label: context.l10n.historySummarySemantics(
+        stats.wins,
+        stats.draws,
+        stats.losses,
+        stats.winRate,
+      ),
+      container: true,
+      child: ExcludeSemantics(
+        child: SizedBox(
+          key: const ValueKey('history_summary'),
+          height: summaryHeight,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: tokens.surface,
+              border: Border.all(color: tokens.border),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                for (var index = 0; index < values.length; index++) ...[
+                  Expanded(
+                    child: _SummaryValue(
+                      value: values[index].$1,
+                      label: values[index].$2,
+                      color: values[index].$3,
+                    ),
+                  ),
+                  if (index < values.length - 1)
+                    VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: tokens.border,
+                    ),
+                ],
+                SizedBox(
+                  width: 80,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: tokens.primary,
+                      borderRadius: const BorderRadius.horizontal(
+                        right: Radius.circular(15),
+                      ),
+                    ),
+                    child: _SummaryValue(
+                      value: '${stats.winRate}%',
+                      label: context.l10n.historyWinRate,
+                      color: Colors.white,
+                      labelColor: Colors.white70,
+                    ),
                   ),
                 ),
-                child: _SummaryValue(
-                  value: '${stats.winRate}%',
-                  label: 'WIN',
-                  color: Colors.white,
-                  labelColor: Colors.white70,
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -88,7 +103,7 @@ class _SummaryValue extends StatelessWidget {
               '$value',
               maxLines: 1,
               style: TextStyle(
-                fontFamily: 'Barlow Condensed',
+                fontFamily: AppFonts.display,
                 color: color,
                 fontSize: 24,
                 height: 1,
@@ -106,7 +121,7 @@ class _SummaryValue extends StatelessWidget {
               label,
               maxLines: 1,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppFonts.body,
                 color: labelColor,
                 fontSize: 9,
                 height: 1,

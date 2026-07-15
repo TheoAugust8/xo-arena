@@ -1,0 +1,131 @@
+{
+  "@@locale": "en",
+  "appTitle": "XO Arena",
+  "brandArena": "ARENA",
+  "brandName": "XO ARENA",
+  "brandTagline": "Prove your edge against the machine.",
+  "appLogoSemantics": "XO Arena logo",
+  "launchSemantics": "XO Arena launch screen",
+  "settings": "Settings",
+  "closeSettings": "Close settings",
+  "appearance": "APPEARANCE",
+  "difficulty": "DIFFICULTY",
+  "symbolSkin": "SYMBOL SKIN",
+  "soundOn": "Turn sound on",
+  "soundOff": "Turn sound off",
+  "systemTheme": "System",
+  "darkTheme": "Dark",
+  "lightTheme": "Light",
+  "themeSelected": "Theme, {theme} selected",
+  "@themeSelected": {
+    "placeholders": {"theme": {"type": "String"}}
+  },
+  "themeOption": "{theme} theme",
+  "@themeOption": {
+    "placeholders": {"theme": {"type": "String"}}
+  },
+  "themeOptionSelected": "{theme} theme, selected",
+  "@themeOptionSelected": {
+    "placeholders": {"theme": {"type": "String"}}
+  },
+  "unableToSaveSettings": "Unable to save settings.",
+  "difficultyEasy": "Easy",
+  "difficultyMedium": "Medium",
+  "difficultyHard": "Hard",
+  "difficultyEasyDescription": "CPU plays randomly. Perfect for beginners.",
+  "difficultyMediumDescription": "CPU makes occasional mistakes. A balanced challenge.",
+  "difficultyHardDescription": "CPU plays optimally. Best outcome is a draw.",
+  "difficultyOption": "{difficulty} difficulty",
+  "@difficultyOption": {
+    "placeholders": {"difficulty": {"type": "String"}}
+  },
+  "difficultyOptionSelected": "{difficulty} difficulty, selected",
+  "@difficultyOptionSelected": {
+    "placeholders": {"difficulty": {"type": "String"}}
+  },
+  "skinClassic": "Classic",
+  "skinGeometric": "Geometric",
+  "skinTennis": "Tennis",
+  "skinFootball": "Football",
+  "skinPoker": "Poker",
+  "skinBasketball": "Basketball",
+  "symbolSkinOption": "{skin} symbol skin",
+  "@symbolSkinOption": {
+    "placeholders": {"skin": {"type": "String"}}
+  },
+  "symbolSkinOptionSelected": "{skin} symbol skin, selected",
+  "@symbolSkinOptionSelected": {
+    "placeholders": {"skin": {"type": "String"}}
+  },
+  "playNow": "PLAY NOW",
+  "viewHistory": "VIEW HISTORY",
+  "retryStats": "Retry stats",
+  "wins": "WINS",
+  "draws": "DRAWS",
+  "losses": "LOSSES",
+  "backToHome": "Back to Home",
+  "match": "MATCH",
+  "newGame": "NEW GAME",
+  "you": "YOU",
+  "cpu": "CPU",
+  "versus": "VS",
+  "yourTurn": "YOUR TURN",
+  "cpuThinking": "CPU THINKING",
+  "youWin": "YOU WIN!",
+  "youWinCompact": "YOU WIN",
+  "cpuWins": "CPU WINS",
+  "draw": "DRAW",
+  "emptyCell": "Empty cell",
+  "gameHistorySaveFailure": "Game completed, but history could not be saved.",
+  "matchHistory": "Match History",
+  "clearMatchHistory": "Clear match history",
+  "clearHistoryTitle": "Clear all match history?",
+  "clearHistoryBody": "Completed matches will be removed permanently.",
+  "cancel": "CANCEL",
+  "clear": "CLEAR",
+  "unableToDeleteMatch": "Unable to delete match.",
+  "unableToClearHistory": "Unable to clear match history.",
+  "noCompletedGames": "No completed games yet.",
+  "playFirstGame": "Play your first game to build match history.",
+  "startPlaying": "START PLAYING",
+  "unableToLoadHistory": "Unable to load match history.",
+  "retry": "RETRY",
+  "playerWon": "{name} won",
+  "@playerWon": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "moveCount": "{count, plural, =1 {1 move} other {{count} moves}}",
+  "@moveCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "completedAt": "Completed {dateTime}",
+  "@completedAt": {
+    "placeholders": {"dateTime": {"type": "String"}}
+  },
+  "justNow": "Just now",
+  "minutesAgo": "{count}m ago",
+  "@minutesAgo": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "hoursAgo": "{count}h ago",
+  "@hoursAgo": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "daysAgo": "{count}d ago",
+  "@daysAgo": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "historyWinsShort": "W",
+  "historyDrawsShort": "D",
+  "historyLossesShort": "L",
+  "historyWinRate": "WIN RATE",
+  "historySummarySemantics": "{wins, plural, =1{1 win} other{{wins} wins}}, {draws, plural, =1{1 draw} other{{draws} draws}}, {losses, plural, =1{1 loss} other{{losses} losses}}, {winRate}% win rate",
+  "@historySummarySemantics": {
+    "placeholders": {
+      "wins": {"type": "int"},
+      "draws": {"type": "int"},
+      "losses": {"type": "int"},
+      "winRate": {"type": "int"}
+    }
+  }
+}
