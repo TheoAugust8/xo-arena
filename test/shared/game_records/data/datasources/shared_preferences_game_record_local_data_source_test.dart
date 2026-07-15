@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xo_arena/core/constants/app_storage_keys.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/data/datasources/shared_preferences_game_record_local_data_source.dart';
 import 'package:xo_arena/shared/game_records/data/models/game_record_dto.dart';
@@ -11,12 +12,12 @@ import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.da
 
 void main() {
   late SharedPreferencesGameRecordLocalDataSource dataSource;
+  late SharedPreferences preferences;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    dataSource = SharedPreferencesGameRecordLocalDataSource(
-      await SharedPreferences.getInstance(),
-    );
+    preferences = await SharedPreferences.getInstance();
+    dataSource = SharedPreferencesGameRecordLocalDataSource(preferences);
   });
 
   test('saves and reads a game record', () async {
@@ -35,6 +36,28 @@ void main() {
     await dataSource.save(newer);
 
     expect(await dataSource.getAll(), [newer, older]);
+  });
+
+  test('retains only the 100 newest game records', () async {
+    final firstDate = DateTime.utc(2026);
+    for (var index = 0; index <= 100; index++) {
+      await dataSource.save(
+        _record(
+          id: 'game-$index',
+          completedAt: firstDate.add(Duration(days: index)),
+        ),
+      );
+    }
+
+    final records = await dataSource.getAll();
+
+    expect(records, hasLength(100));
+    expect(records.first.id, 'game-100');
+    expect(records.map((record) => record.id), isNot(contains('game-0')));
+    final storedRecords =
+        jsonDecode(preferences.getString(AppStorageKeys.gameRecords)!)
+            as List<Object?>;
+    expect(storedRecords, hasLength(100));
   });
 
   test('deletes the record with the requested id', () async {

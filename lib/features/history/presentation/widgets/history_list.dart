@@ -15,30 +15,33 @@ class _HistoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     final stats = GameRecordStats.fromRecords(records);
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
-    return ListView(
+    return ListView.builder(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.space20,
         AppSpacing.space16,
         AppSpacing.space20,
         AppSpacing.space32,
       ),
-      children: [
-        _SummaryBar(stats: stats),
-        const SizedBox(height: AppSpacing.space20),
-        for (var index = 0; index < records.length; index++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.space8),
-            child: _HistoryReveal(
-              enabled: !disableAnimations,
-              index: index,
-              child: _HistoryCard(
-                record: records[index],
-                isMutating: isMutating,
-                onDelete: onDelete,
-              ),
+      itemCount: records.length + 2,
+      itemBuilder: (context, itemIndex) {
+        if (itemIndex == 0) return _SummaryBar(stats: stats);
+        if (itemIndex == 1) {
+          return const SizedBox(height: AppSpacing.space20);
+        }
+        final recordIndex = itemIndex - 2;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.space8),
+          child: _HistoryReveal(
+            enabled: !disableAnimations,
+            index: recordIndex,
+            child: _HistoryCard(
+              record: records[recordIndex],
+              isMutating: isMutating,
+              onDelete: onDelete,
             ),
           ),
-      ],
+        );
+      },
     );
   }
 }
@@ -59,7 +62,7 @@ class _HistoryReveal extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: enabled ? 0 : 1, end: 1),
       duration: enabled
-          ? Duration(milliseconds: 220 + index * 40)
+          ? Duration(milliseconds: 220 + (index < 5 ? index : 5) * 40)
           : Duration.zero,
       curve: Curves.easeOutCubic,
       builder: (context, value, child) => Opacity(

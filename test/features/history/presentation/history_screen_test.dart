@@ -66,6 +66,33 @@ void main() {
     );
   });
 
+  testWidgets('builds long history lazily with bounded reveal motion', (
+    tester,
+  ) async {
+    final repository = InMemoryGameRecordRepository();
+    for (var index = 0; index < 30; index++) {
+      await repository.save(
+        _record(
+          id: 'game-$index',
+          completedAt: DateTime.utc(2026).add(Duration(days: index)),
+        ),
+      );
+    }
+
+    await _pumpHistory(tester, repository);
+
+    final list = tester.widget<ListView>(find.byType(ListView));
+    expect(list.childrenDelegate, isA<SliverChildBuilderDelegate>());
+    expect(
+      tester
+          .widgetList<TweenAnimationBuilder<double>>(
+            find.byType(TweenAnimationBuilder<double>),
+          )
+          .map((animation) => animation.duration),
+      everyElement(lessThanOrEqualTo(const Duration(milliseconds: 420))),
+    );
+  });
+
   testWidgets('shows a draw without claiming a winner', (tester) async {
     final repository = InMemoryGameRecordRepository();
     await repository.save(_record(id: 'draw', outcome: GameOutcome.draw));

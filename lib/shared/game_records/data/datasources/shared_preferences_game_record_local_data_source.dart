@@ -10,6 +10,8 @@ class SharedPreferencesGameRecordLocalDataSource
     implements GameRecordLocalDataSource {
   SharedPreferencesGameRecordLocalDataSource(this._preferences);
 
+  static const maxStoredRecords = 100;
+
   final SharedPreferences _preferences;
   // SharedPreferences has no transaction API. Serializing mutations prevents
   // overlapping read, modify, write cycles from losing records.
@@ -52,7 +54,7 @@ class SharedPreferencesGameRecordLocalDataSource
     records.sort(
       (first, second) => second.completedAt.compareTo(first.completedAt),
     );
-    return records;
+    return records.take(maxStoredRecords).toList();
   }
 
   @override
@@ -60,7 +62,10 @@ class SharedPreferencesGameRecordLocalDataSource
     final records = await _readAll();
     records.removeWhere((existingRecord) => existingRecord.id == record.id);
     records.add(record);
-    await _write(records);
+    records.sort(
+      (first, second) => second.completedAt.compareTo(first.completedAt),
+    );
+    await _write(records.take(maxStoredRecords).toList());
   });
 
   @override
