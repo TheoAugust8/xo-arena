@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 
 final class SynthesizedGameSoundPlayer implements GameSoundPlayer {
   final _players = <GameSoundCue, AudioPlayer>{};

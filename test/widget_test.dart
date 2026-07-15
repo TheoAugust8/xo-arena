@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/app/app.dart';
 import 'package:xo_arena/app/router.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/launch/presentation/startup_launch.dart';

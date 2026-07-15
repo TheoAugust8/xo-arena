@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 
 import 'game_sound_synthesizer.dart';
 

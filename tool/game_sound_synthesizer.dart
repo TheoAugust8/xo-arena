@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 
 abstract final class GameSoundSynthesizer {
   static const sampleRate = 22050;

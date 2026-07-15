@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 
 import '../../tool/game_sound_synthesizer.dart';
 
