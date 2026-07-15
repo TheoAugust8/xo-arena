@@ -18,6 +18,7 @@ Use repository Make targets. FVM pins Flutter 3.44.0 and Dart 3.12.0.
 ```sh
 make install
 make run
+make sounds
 make generate
 make format
 make format-check
@@ -26,7 +27,7 @@ make test
 make check
 ```
 
-Run `make generate` after changing Riverpod annotations, Freezed models, or JSON serialization declarations. Generated `*.g.dart` and `*.freezed.dart` files are ignored and must not be committed.
+Run `make sounds` after changing synthesized audio definitions. Run `make generate` after changing ARB translations, Riverpod annotations, Freezed models, or JSON serialization declarations. Generated localization, `*.g.dart`, and `*.freezed.dart` files are ignored and must not be committed.
 
 Before handing off code, run targeted tests during development, then `make check`. If full verification cannot run, report exact command and failure.
 
@@ -39,14 +40,15 @@ Repository currently contains:
 * Easy, Medium, and deterministic Minimax CPU strategies.
 * Riverpod orchestration with input locking, restart invalidation, and completed game persistence.
 * SharedPreferences backed game history and application settings behind repository contracts.
+* Typed ARB localization with English as current supported locale.
+* Synthesized gameplay cues with persisted mute control.
+* Debug only Riverpod state observation.
 * Responsive, accessible Home, Game, History, and Settings experiences with reduced motion support.
 * Unit, controller, widget, architecture, and golden tests covering core behavior and visual states.
 
 Keep this section and `README.md` aligned with shipped behavior and documented limitations.
 
-## Product scope
-
-Core experience:
+## Core experience
 
 * Responsive 3 by 3 board.
 * Human versus CPU play.
@@ -55,15 +57,6 @@ Core experience:
 * Clear interaction lock while CPU is choosing a move.
 * Accessible semantics and touch targets.
 * Persisted completed game history only where it supports visible behavior.
-
-Reasonable enhancements after core quality is complete:
-
-* First player selection.
-* Difficulty levels backed by distinct CPU strategies.
-* Lightweight animations and haptics.
-* Golden tests for important visual states.
-
-Keep authentication, online multiplayer, arbitrary board sizes, and unrelated infrastructure out of scope unless explicitly requested.
 
 ## Architecture
 
@@ -156,7 +149,7 @@ Do not add a dependency unless it solves a current problem. Update `pubspec.yaml
 
 ## Documentation
 
-Keep `README.md` accurate for setup, supported behavior, architecture, testing, decisions, limitations, and future improvements. Record important tradeoffs in its decision section or a focused ADR if discussion outgrows README. Never claim tests or features that have not been verified.
+Keep `README.md` accurate for setup, supported behavior, architecture, testing, decisions, and limitations. Record important tradeoffs in its decision section or a focused ADR if discussion outgrows README. Never claim tests or features that have not been verified.
 
 ## Git hygiene
 

@@ -48,9 +48,9 @@ XO Arena favors clear domain rules, pragmatic Clean Architecture, deterministic 
   </tr>
 </table>
 
-## Product scope
+## Features
 
-Core target:
+XO Arena includes:
 
 * Responsive 3 by 3 board.
 * Human versus CPU play.
@@ -66,8 +66,6 @@ Core target:
 * Synthesized gameplay sound cues with a persisted mute control.
 * Branded native startup, animated launch sequence, and platform icons.
 * Stable visual regression baselines for key screens and symbol skins.
-
-The product keeps its experience focused on a single game flow. It does not currently include first player selection, haptics, or online play.
 
 ## Prerequisites
 
@@ -138,19 +136,20 @@ game cells, status badges, score, symbol skins, and settings variants.
 make get              # Fetch Dart and Flutter dependencies through FVM
 make run              # Run XO Arena
 make widgetbook       # Run the interactive design system catalog
+make sounds           # Regenerate bundled gameplay sound assets
 make format           # Format Dart files
 make format-check     # Check Dart formatting
 make analyze          # Run static analysis
 make test             # Run test suite
 make goldens          # Run visual regression tests
 make update-goldens   # Update inspected visual regression baselines
-make generate         # Generate Riverpod, Freezed, and JSON sources
+make generate         # Generate localization, Riverpod, Freezed, and JSON sources
 make generate-watch   # Watch declarations and regenerate sources
 make check            # Generate, check formatting, analyze, and test
 make clean            # Clean Flutter outputs and restore dependencies
 ```
 
-Run `make generate` after changing Riverpod annotations, Freezed models, or JSON serialization declarations. Generated `*.g.dart` and `*.freezed.dart` files are intentionally ignored by Git.
+Run `make generate` after changing ARB translations, Riverpod annotations, Freezed models, or JSON serialization declarations. Generated localization, `*.g.dart`, and `*.freezed.dart` files are intentionally ignored by Git.
 
 ## Technical stack
 
@@ -161,6 +160,7 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 | State management and DI | Riverpod 3 with code generation |
 | Navigation | GoRouter |
 | Immutable models | Freezed |
+| Localization | Flutter gen_l10n with ARB sources |
 | Local persistence | SharedPreferences |
 | Sound playback | audioplayers |
 | Tests | flutter_test and manual fakes |
@@ -173,7 +173,7 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 Project uses pragmatic Clean Architecture with feature first organization.
 
 ```text
-Presentation -> Domain <- Data
+Presentation -> Use cases -> Domain contracts <- Data
 App composition -> Presentation + Domain + Data
 ```
 
@@ -198,8 +198,10 @@ lib/
   app/
     app.dart                   Application root
     di/                        Concrete dependency composition
+    observers/                 Debug state observation
     router.dart                Home, Game, and History routes
   core/
+    constants/                 Route, storage, and application constants
     design_system/             Tokens, themes, and reusable components
   features/
     home/
@@ -219,6 +221,14 @@ lib/
   shared/
     game_configuration/
       domain/entities/         Shared difficulty type
+    game_records/
+      domain/
+        entities/              Records and statistics
+        repositories/          Game record repository contract
+      data/
+        models/                JSON DTO and domain mapping
+        datasources/           SharedPreferences access
+        repositories/          Repository implementation
     game_symbols/
       domain/entities/         Shared symbol skin type
       presentation/            Shared symbol rendering
@@ -231,16 +241,12 @@ lib/
         datasources/           SharedPreferences access
         repositories/          Settings repository implementation
       presentation/            Riverpod state and shared settings UI
-    game_records/
-      domain/
-        entities/              Records and statistics
-        repositories/          Game record repository contract
-      data/
-        models/                JSON DTO and domain mapping
-        datasources/           SharedPreferences access
-        repositories/          Repository implementation
+  l10n/
+    app_en.arb                 English application copy
+    l10n.dart                  Localization access and exports
 tool/
-  game_sound_synthesizer.dart  Development asset generator
+  generate_game_sounds.dart    Sound asset generation entry point
+  game_sound_synthesizer.dart  Pure PCM WAV synthesizer
 test/
   architecture/                Enforced dependency rules
   features/                    Feature domain, data, and widget tests
@@ -252,13 +258,15 @@ test/
 
 ## State management
 
-[Riverpod](https://riverpod.dev/) manages dependency composition and asynchronous History state.
+[Riverpod](https://riverpod.dev/) manages dependency composition plus Game, History, and Settings state.
 
 `gameRecordsProvider` loads persisted records for Home statistics and History. After delete or clear operations, History invalidates provider so current local state is loaded again. Mutation controls remain disabled while an operation is pending.
 
 `settingsProvider` exposes System theme, Hard difficulty, Classic skin, and enabled sound defaults immediately, restores stored choices asynchronously, and serializes writes. Home and Game share one settings state without importing `app` or each other's presentation code.
 
 The game notifier owns turn orchestration, CPU waiting state, stale asynchronous result protection, completed game persistence, and restart behavior. The immutable `Game` aggregate owns the board, current player, player to symbol mapping, status, winner, and winning indexes. `Board`, win rules, and CPU algorithms stay pure and independent from Riverpod.
+
+Debug builds register `AppStateObserver` at the root `ProviderScope`. It logs provider additions, updates, and failures while release builds pay no logging cost. The observer uses Riverpod's native observation boundary and accepts an injectable sink for focused tests.
 
 ## Persistence
 
@@ -282,15 +290,23 @@ Local data source serializes write operations and makes reads wait for pending m
 
 Three explicit destinations keep navigation simple while allowing each flow to evolve independently.
 
+Route paths live in `AppRoutes`, keeping navigation calls and router declarations aligned without scattering string literals.
+
 Routes use short fade and slide transitions. Flutter's reduced motion signal disables movement while preserving immediate navigation and state changes. Leaving Game disposes its auto dispose notifier, cancels pending CPU work, and ensures the next Game entry starts a fresh session.
 
 ## Sound design
 
-Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game domain owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool`. Domain rules and controller orchestration remain independent from audio playback details.
+Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. Move cues use slightly longer envelopes to reduce the risk of being lost to mobile browser startup latency while staying unobtrusive. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game domain owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool` and `make sounds` reproduces every bundled cue. Domain rules and controller orchestration remain independent from audio playback details.
 
 Sound is enabled by default and can be muted from Settings. The choice persists with other game preferences. iOS playback uses the ambient audio category, respecting the Ring and Silent switch and mixing without interrupting other audio.
 
-The platform launch screens use the active light or dark brand background to avoid a white frame while Flutter initializes. Flutter then shows the rounded badge, sequential X and O drawing, title reveal, tagline, and progress indicator. Reduced motion skips the sequence and exposes Home immediately. The same deterministic logo geometry produces the iOS, Android, macOS, and Web icons.
+## Localization
+
+User facing copy lives in ARB sources under `lib/l10n`. Flutter generates typed localization accessors consumed through `context.l10n`, so widgets do not own translation strings. English is the current supported locale. A new locale requires an additional ARB file and translated values, without changing presentation structure.
+
+## Launch experience
+
+The platform launch screens use the active light or dark brand background to avoid a white frame while Flutter initializes. Flutter then shows a compact rounded badge, sequential X and O drawing, title reveal, tagline, and progress indicator. Application content appears within two seconds. Reduced motion skips the sequence and exposes Home immediately. The same deterministic logo geometry produces the iOS, Android, macOS, and Web icons.
 
 ## Testing strategy
 
@@ -306,7 +322,9 @@ Current tests cover:
 * Targeted record corruption, SharedPreferences write failures, serialization, and queue recovery.
 * Completed game persistence use case.
 * Preference defaults, generated JSON mapping, restoration, corruption fallback, no op updates, and ordered writes.
-* Sound synthesis, transition cue mapping, mute persistence, and Game integration.
+* Sound synthesis, minimum move cue duration, transition cue mapping, mute persistence, and Game integration.
+* Sealed game evaluation variants and exhaustive result state compatibility.
+* Debug state observation for provider additions and updates.
 * Game record metadata validation and shared statistics.
 * Launch timing, reduced motion behavior, and launch semantics.
 * Architecture dependency rules between App, Core, Presentation, Domain, and Data.
@@ -359,9 +377,9 @@ Home selects difficulty, Game consumes it, and History displays completed match 
 
 TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays cover current motion needs. This keeps motion short, testable, dependency free, and compatible with reduced motion settings.
 
-### Why Freezed is used for value state
+### Why Freezed is used for value state and unions
 
-GameRecord and GameRecordStats benefit from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. Board and Game stay small explicit value types with defensive collection copying and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
+GameRecord and GameRecordStats benefit from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. `GameEvaluation` is a sealed Freezed union, making active, won, and draw results explicit and exhaustively matchable without impossible flag combinations. Board and Game stay explicit value types because their constructors enforce defensive collection copying, invariants, and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
 
 ### Why deterministic Minimax is target CPU strategy
 
@@ -369,7 +387,7 @@ Minimax fits 3 by 3 search space, has predictable behavior, and can be tested wi
 
 ### Why no Flutter Hooks
 
-Current lifecycle needs do not justify extra dependency. Standard Flutter and Riverpod APIs remain sufficient. Hooks can be reconsidered when reusable widget lifecycle logic appears.
+Lifecycle needs do not justify extra dependency. Standard Flutter and Riverpod APIs remain sufficient.
 
 ## Contributing
 
