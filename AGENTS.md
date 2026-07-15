@@ -24,6 +24,8 @@ make format
 make format-check
 make analyze
 make test
+make coverage
+make integration-test DEVICE=macos
 make check
 ```
 
@@ -37,14 +39,14 @@ Repository currently contains:
 
 * Home, Game, and History routes using GoRouter.
 * Immutable Board and Game domain models with pure win and draw evaluation.
-* Easy, Medium, and deterministic Minimax CPU strategies.
+* Easy, Medium, and Minimax based Hard CPU strategies with controlled imperfection.
 * Riverpod orchestration with input locking, restart invalidation, and completed game persistence.
 * SharedPreferences backed game history and application settings behind repository contracts.
 * Typed ARB localization with English as current supported locale.
 * Synthesized gameplay cues with persisted mute control.
 * Debug only Riverpod state observation.
 * Responsive, accessible Home, Game, History, and Settings experiences with reduced motion support.
-* Unit, controller, widget, architecture, and golden tests covering core behavior and visual states.
+* Unit, controller, widget, architecture, golden, and integration tests covering core behavior and complete application flows.
 
 Keep this section and `README.md` aligned with shipped behavior and documented limitations.
 
@@ -89,7 +91,7 @@ History is a shared boundary because Game writes records and History reads them.
 
 Represent player identity separately from board mark when choices can vary. Board operations must reject occupied cells without mutation. Game evaluation must distinguish active play, wins, and draws. A full winning board is a win, not a draw.
 
-Keep winning patterns and CPU algorithms deterministic. Preferred hard CPU behavior uses pure Minimax. Depth aware scoring should prefer quicker wins and delay unavoidable losses. Stable move ordering makes tests reproducible.
+Keep winning patterns deterministic. Isolate controlled CPU randomness behind an injectable dependency. Hard CPU behavior uses Minimax scoring with a documented imperfection rate. Immediate wins and blocks remain protected. Depth aware scoring should prefer quicker wins and delay unavoidable losses. Stable move ordering and injected randomness make tests reproducible.
 
 Invalid actions must be explicit through a typed result, controlled domain exception, or unchanged state. UI checks alone do not enforce business rules.
 
@@ -132,6 +134,8 @@ Minimum game coverage:
 * Valid and invalid moves.
 * No moves after completion.
 * Immediate CPU win and immediate human win block.
+* Controlled Hard imperfection threshold and reachable human win.
+* Perfect Minimax behavior when imperfections are disabled.
 * CPU never chooses an occupied cell.
 * Deterministic CPU choice when scores tie.
 * Human move followed by CPU transition.
@@ -140,6 +144,8 @@ Minimum game coverage:
 * Nine rendered cells, visible marks, result copy, and reset behavior.
 
 Use manual fakes when they stay clearer than a mocking dependency. Every bug fix should include a regression test when practical.
+
+`make coverage` enforces handwritten line and branch thresholds while excluding generated code. Keep integration tests focused on critical full application flows and run them with an explicit Flutter device.
 
 ## Code style
 

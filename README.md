@@ -54,6 +54,7 @@ XO Arena includes:
 
 * Responsive 3 by 3 board.
 * Human versus CPU play.
+* Easy, Medium, and Hard CPU levels. Hard uses Minimax with a controlled 10% chance of strategic imperfection.
 * Explicit active game, win, and draw states.
 * Restart support.
 * Locked interaction while CPU is choosing a move.
@@ -141,6 +142,8 @@ make format           # Format Dart files
 make format-check     # Check Dart formatting
 make analyze          # Run static analysis
 make test             # Run test suite
+make coverage         # Enforce handwritten line and branch coverage
+make integration-test DEVICE=macos # Run complete application flows
 make goldens          # Run visual regression tests
 make update-goldens   # Update inspected visual regression baselines
 make generate         # Generate localization, Riverpod, Freezed, and JSON sources
@@ -328,7 +331,8 @@ Current tests cover:
 * Game record metadata validation and shared statistics.
 * Launch timing, reduced motion behavior, and launch semantics.
 * Architecture dependency rules between App, Core, Presentation, Domain, and Data.
-* Five visual regression baselines covering Home, Game, History, Settings, and every symbol skin.
+* Six visual regression baselines covering Home, initial and completed Game, History, Settings, and every symbol skin.
+* Complete application flows covering a persisted match and settings restoration.
 
 Game coverage:
 
@@ -339,6 +343,8 @@ Game coverage:
 * Valid and invalid moves.
 * No move after completion.
 * Immediate CPU win and Human win block.
+* Controlled Hard imperfection threshold, protected tactical moves, and a reachable Human win.
+* Perfect Minimax fallback when imperfections are disabled.
 * CPU never choosing occupied cell.
 * Deterministic choice when scores tie.
 * Interaction lock during CPU work.
@@ -352,6 +358,12 @@ Run full local quality gate with:
 ```sh
 make check
 ```
+
+`make coverage` excludes generated Dart and generated localization sources,
+then requires at least 90% line coverage and 85% branch coverage. Run device
+flows separately with `make integration-test DEVICE=macos`, replacing `macos`
+with another configured Flutter device when needed. GitHub Actions runs these
+flows on Linux under Xvfb.
 
 ## Technical decisions
 
@@ -381,9 +393,9 @@ TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays c
 
 GameRecord and GameRecordStats benefit from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. `GameEvaluation` is a sealed Freezed union, making active, won, and draw results explicit and exhaustively matchable without impossible flag combinations. Board and Game stay explicit value types because their constructors enforce defensive collection copying, invariants, and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
 
-### Why deterministic Minimax is target CPU strategy
+### Why Hard uses controlled Minimax imperfection
 
-Minimax fits 3 by 3 search space, has predictable behavior, and can be tested without Flutter. Depth aware scoring can favor faster wins and slower unavoidable losses. Stable move ordering keeps results reproducible.
+Minimax fits the 3 by 3 search space and can be tested without Flutter. Hard evaluates every valid move with depth aware scoring. On strategic turns where a lower scoring move exists, it has a 10% chance of choosing one. Immediate CPU wins and immediate Human threats remain protected. This keeps Hard strong while leaving a legitimate path to victory. Injected randomness and a configurable imperfection rate keep domain tests reproducible.
 
 ### Why no Flutter Hooks
 
