@@ -19,7 +19,7 @@ define announce
 	@printf '%b%s%b%b%s%b%b%s%b %b%s%b\n' '$(XO_BOLD)$(XO_RED)' 'X' '$(XO_RESET)' '$(XO_BOLD)$(XO_LIGHT)' 'O' '$(XO_RESET)' '$(XO_BOLD)$(XO_RED)' ' ARENA' '$(XO_RESET)' '$(XO_MUTED)' '· $(1)' '$(XO_RESET)'
 endef
 
-.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test goldens update-goldens sounds generate generate-watch clean check
+.PHONY: help ensure-fvm install get run widgetbook format format-check analyze test coverage integration-test goldens update-goldens sounds generate generate-watch clean check
 
 help:
 	@printf '\n%b%s%b%b%s%b%b%s%b\n' '$(XO_BOLD)$(XO_RED)' 'X' '$(XO_RESET)' '$(XO_BOLD)$(XO_LIGHT)' 'O' '$(XO_RESET)' '$(XO_BOLD)$(XO_RED)' ' ARENA' '$(XO_RESET)'
@@ -32,6 +32,8 @@ help:
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make format-check' '$(XO_RESET)' 'Check Dart formatting'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make analyze' '$(XO_RESET)' 'Run static analysis'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make test' '$(XO_RESET)' 'Run tests'
+	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make coverage' '$(XO_RESET)' 'Run tests with line and branch coverage gates'
+	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make integration-test DEVICE=macos' '$(XO_RESET)' 'Run full application flows on a target device'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make goldens' '$(XO_RESET)' 'Run visual regression tests'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make update-goldens' '$(XO_RESET)' 'Update inspected visual baselines'
 	@printf '  %b%-20s%b %s\n' '$(XO_RED)' 'make sounds' '$(XO_RESET)' 'Regenerate synthesized game sounds'
@@ -100,6 +102,19 @@ test: ensure-fvm
 	$(call announce,Running tests)
 	@$(FVM) flutter test
 
+coverage: ensure-fvm
+	$(call announce,Checking line and branch coverage)
+	@$(FVM) flutter test --coverage --branch-coverage --reporter compact
+	@$(FVM) dart run tool/check_coverage.dart
+
+integration-test: ensure-fvm
+	@if [ -z "$(DEVICE)" ]; then \
+		printf '%b%s%b\n' '$(XO_RED)' 'DEVICE is required, for example: make integration-test DEVICE=macos' '$(XO_RESET)'; \
+		exit 1; \
+	fi
+	$(call announce,Running integration tests on $(DEVICE))
+	@$(FVM) flutter test integration_test -d "$(DEVICE)"
+
 goldens: ensure-fvm
 	$(call announce,Running visual regression tests)
 	@$(FVM) flutter test test/goldens/xo_arena_golden_test.dart
@@ -131,4 +146,4 @@ check:
 	@$(MAKE) generate
 	@$(MAKE) format-check
 	@$(MAKE) analyze
-	@$(MAKE) test
+	@$(MAKE) coverage

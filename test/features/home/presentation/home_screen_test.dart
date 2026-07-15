@@ -84,6 +84,32 @@ void main() {
     expect(find.byType(ListView), findsNothing);
   });
 
+  testWidgets('persists every shared settings selection', (tester) async {
+    final router = _router();
+    final repository = _MemorySettingsRepository();
+    addTearDown(router.dispose);
+
+    await _pumpHome(tester, router, settingsRepository: repository);
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('settings_theme_light')));
+    await tester.tap(find.byKey(const ValueKey('settings_difficulty_medium')));
+    await tester.tap(find.byKey(const ValueKey('settings_skin_football')));
+    await tester.tap(find.byKey(const ValueKey('settings_sound_toggle')));
+    await tester.pumpAndSettle();
+
+    expect(
+      repository.value,
+      const AppSettings(
+        theme: AppThemePreference.light,
+        difficulty: GameDifficulty.medium,
+        skin: GameSymbolSkin.football,
+        soundEnabled: false,
+      ),
+    );
+  });
+
   testWidgets('pins actions beneath a centered Home hero', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -253,13 +279,14 @@ Future<void> _pumpHome(
   WidgetTester tester,
   GoRouter router, {
   List<GameRecord> records = const [],
+  SettingsRepository? settingsRepository,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         gameRecordsProvider.overrideWith((ref) async => records),
         settingsRepositoryProvider.overrideWithValue(
-          _MemorySettingsRepository(),
+          settingsRepository ?? _MemorySettingsRepository(),
         ),
       ],
       child: MaterialApp.router(

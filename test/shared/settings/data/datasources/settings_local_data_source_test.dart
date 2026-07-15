@@ -79,4 +79,27 @@ void main() {
       '{"theme":"light","difficulty":"easy","skin":"geometric","soundEnabled":true}',
     );
   });
+
+  test('reports a failed settings write', () async {
+    final dataSource = SharedPreferencesSettingsLocalDataSource(
+      _FailingWriteSharedPreferences(),
+    );
+
+    await expectLater(
+      dataSource.save(AppSettings.defaults),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          'Unable to persist app settings.',
+        ),
+      ),
+    );
+  });
+}
+
+final class _FailingWriteSharedPreferences extends Fake
+    implements SharedPreferences {
+  @override
+  Future<bool> setString(String key, String value) async => false;
 }
