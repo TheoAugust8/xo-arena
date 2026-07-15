@@ -1,11 +1,10 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:xo_arena/core/constants/app_storage_keys.dart';
-import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/data/datasources/game_record_local_data_source.dart';
 import 'package:xo_arena/shared/game_records/data/models/game_record_dto.dart';
+import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 
 class SharedPreferencesGameRecordLocalDataSource
     implements GameRecordLocalDataSource {

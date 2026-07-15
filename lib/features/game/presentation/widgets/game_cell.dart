@@ -101,7 +101,6 @@ class GameCell extends StatelessWidget {
                             key: ValueKey('${resolvedMark.name}-${skin.name}'),
                             mark: resolvedMark,
                             skin: skin,
-                            size: 48,
                           ),
                   ),
                 ),

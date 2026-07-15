@@ -77,8 +77,8 @@ class _LaunchScreenState extends State<LaunchScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: launchDuration)
-      ..forward();
+    _controller = AnimationController(vsync: this, duration: launchDuration);
+    unawaited(_controller.forward());
   }
 
   @override

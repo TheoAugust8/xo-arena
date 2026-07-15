@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:xo_arena/core/constants/app_routes.dart';
 import 'package:xo_arena/core/design_system/app_fonts.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
-import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 import 'package:xo_arena/core/design_system/components/app_logo.dart';
 import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
-import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record_participants.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record_stats.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
+import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 
 part 'widgets/clear_history_dialog.dart';
+part 'widgets/history_card.dart';
 part 'widgets/history_header.dart';
 part 'widgets/history_list.dart';
-part 'widgets/history_summary.dart';
-part 'widgets/history_card.dart';
 part 'widgets/history_states.dart';
+part 'widgets/history_summary.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});

@@ -16,7 +16,6 @@ abstract class AppSettings with _$AppSettings {
   }) = _AppSettings;
 
   static const defaults = AppSettings(
-    theme: AppThemePreference.system,
     difficulty: GameDifficulty.hard,
     skin: GameSymbolSkin.classic,
   );

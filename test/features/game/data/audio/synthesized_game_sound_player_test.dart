@@ -5,9 +5,8 @@ import 'package:audioplayers_platform_interface/audioplayers_platform_interface.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/data/audio/synthesized_game_sound_player.dart';
+import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +49,7 @@ void main() {
   });
 
   test('prepares every cue before first gameplay interaction', () async {
-    final dynamic player = SynthesizedGameSoundPlayer();
+    final player = SynthesizedGameSoundPlayer();
 
     await player.prepare();
 

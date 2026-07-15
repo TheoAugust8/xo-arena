@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/app/app.dart';
 import 'package:xo_arena/app/router.dart';
 import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';

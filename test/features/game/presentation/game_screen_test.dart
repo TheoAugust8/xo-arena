@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
-import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/core/design_system/app_theme.dart';
+import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/game_screen.dart';
-import 'package:xo_arena/l10n/l10n.dart';
+import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
 import 'package:xo_arena/shared/settings/domain/repositories/settings_repository.dart';
 import 'package:xo_arena/shared/settings/presentation/settings_providers.dart';

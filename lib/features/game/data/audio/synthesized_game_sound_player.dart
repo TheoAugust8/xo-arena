@@ -39,7 +39,7 @@ final class SynthesizedGameSoundPlayer implements GameSoundPlayer {
 
   void _discardFailedPreparation(GameSoundCue cue, Future<void> preparation) {
     if (identical(_preparation[cue], preparation)) {
-      _preparation.remove(cue);
+      unawaited(_preparation.remove(cue));
     }
   }
 

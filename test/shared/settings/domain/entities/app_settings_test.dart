@@ -5,14 +5,10 @@ import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
 
 void main() {
   test('uses hard difficulty and classic skin by default', () {
-    expect(
-      AppSettings.defaults,
-      const AppSettings(
-        theme: AppThemePreference.system,
-        difficulty: GameDifficulty.hard,
-        skin: GameSymbolSkin.classic,
-      ),
-    );
+    expect(AppSettings.defaults.theme, AppThemePreference.system);
+    expect(AppSettings.defaults.difficulty, GameDifficulty.hard);
+    expect(AppSettings.defaults.skin, GameSymbolSkin.classic);
+    expect(AppSettings.defaults.soundEnabled, isTrue);
   });
 
   test('creates immutable preference updates', () {

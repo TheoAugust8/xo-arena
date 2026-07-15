@@ -69,7 +69,6 @@ class _HistoryCard extends StatelessWidget {
               vertical: AppSpacing.space12,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 4,

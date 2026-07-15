@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
 import 'package:xo_arena/features/history/presentation/history_screen.dart';
 import 'package:xo_arena/l10n/l10n.dart';
-import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/domain/repositories/game_record_repository.dart';
@@ -100,13 +100,7 @@ void main() {
 
   testWidgets('uses a compact match card', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(
-      _record(
-        id: 'game-1',
-        difficulty: GameDifficulty.hard,
-        skin: GameSymbolSkin.classic,
-      ),
-    );
+    await repository.save(_record(id: 'game-1'));
 
     await _pumpHistory(tester, repository);
 
@@ -124,7 +118,6 @@ void main() {
     await repository.save(
       _record(
         id: 'game-1',
-        outcome: GameOutcome.playerOneWin,
         difficulty: GameDifficulty.medium,
         skin: GameSymbolSkin.tennis,
       ),
@@ -170,7 +163,7 @@ void main() {
 
   testWidgets('deletes an individual completed game', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-1'));
 
     await _pumpHistory(tester, repository);
     await tester.drag(
@@ -185,7 +178,7 @@ void main() {
 
   testWidgets('clears all completed games', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-1'));
     await repository.save(_record(id: 'game-2', playerOneName: 'Bailey'));
 
     await _pumpHistory(tester, repository);
@@ -223,7 +216,7 @@ void main() {
     tester,
   ) async {
     final repository = PendingDeleteGameRecordRepository();
-    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-1'));
 
     await _pumpHistory(tester, repository);
     await tester.drag(
@@ -374,11 +367,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final repository = InMemoryGameRecordRepository();
     await repository.save(
-      _record(
-        id: 'game-1',
-        difficulty: GameDifficulty.hard,
-        skin: GameSymbolSkin.geometric,
-      ),
+      _record(id: 'game-1', skin: GameSymbolSkin.geometric),
     );
 
     await tester.pumpWidget(

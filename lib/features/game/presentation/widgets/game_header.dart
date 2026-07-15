@@ -57,8 +57,6 @@ class _GameHeader extends StatelessWidget {
           key: const ValueKey('game_settings_button'),
           tooltip: context.l10n.settings,
           icon: Icons.settings_outlined,
-          visualSize: 40,
-          iconSize: 18,
           onPressed: onSettingsPressed,
         ),
       ],

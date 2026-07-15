@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:xo_arena/core/design_system/app_radius.dart';
@@ -144,7 +146,7 @@ class _GameActivityDotState extends State<GameActivityDot>
 
   void _syncAnimation() {
     if (widget.isPulsing && !MediaQuery.disableAnimationsOf(context)) {
-      _controller.repeat(reverse: true);
+      unawaited(_controller.repeat(reverse: true));
       return;
     }
     _controller
