@@ -104,6 +104,7 @@ final class MinimaxCpuStrategy extends _CpuStrategyBase {
 abstract base class _CpuStrategyBase implements CpuStrategy {
   const _CpuStrategyBase();
 
+  // Stable ordering makes equal scoring moves deterministic across runs.
   static const _priority = [4, 0, 2, 6, 8, 1, 3, 5, 7];
 
   Iterable<int> ordered(Iterable<int> availableMoves) =>

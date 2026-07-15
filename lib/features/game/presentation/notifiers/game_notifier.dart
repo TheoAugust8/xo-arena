@@ -22,6 +22,8 @@ CompleteGameUseCase completeGameUseCase(Ref ref) {
 
 @riverpod
 class GameNotifier extends _$GameNotifier {
+  // Every delayed operation captures this token. Restart and disposal advance
+  // it so stale CPU turns and persistence failures cannot mutate a new game.
   var _generation = 0;
   Timer? _cpuTimer;
 
