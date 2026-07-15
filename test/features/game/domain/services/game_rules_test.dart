@@ -83,4 +83,44 @@ void main() {
     expect(result.isDraw, isTrue);
     expect(result.winningIndexes, isEmpty);
   });
+
+  test('represents active, won, and draw evaluations as distinct variants', () {
+    final active = GameRules.evaluate(Board.empty());
+    final won = GameRules.evaluate(
+      Board(
+        cells: const [
+          GameMark.x,
+          GameMark.x,
+          GameMark.x,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+        ],
+      ),
+    );
+    final draw = GameRules.evaluate(
+      Board(
+        cells: const [
+          GameMark.x,
+          GameMark.o,
+          GameMark.x,
+          GameMark.x,
+          GameMark.o,
+          GameMark.o,
+          GameMark.o,
+          GameMark.x,
+          GameMark.x,
+        ],
+      ),
+    );
+
+    expect({
+      active.runtimeType,
+      won.runtimeType,
+      draw.runtimeType,
+    }, hasLength(3));
+  });
 }

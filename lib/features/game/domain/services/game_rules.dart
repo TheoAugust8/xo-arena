@@ -1,15 +1,34 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:xo_arena/features/game/domain/entities/board.dart';
 
-class GameEvaluation {
-  const GameEvaluation({
-    required this.winningMark,
-    required this.winningIndexes,
-    required this.isDraw,
-  });
+part 'game_rules.freezed.dart';
 
-  final GameMark? winningMark;
-  final List<int> winningIndexes;
-  final bool isDraw;
+/// Exhaustive evaluation states prevent impossible draw and winner mixtures.
+@freezed
+sealed class GameEvaluation with _$GameEvaluation {
+  const GameEvaluation._();
+
+  const factory GameEvaluation.active() = ActiveGameEvaluation;
+
+  const factory GameEvaluation.won({
+    required GameMark mark,
+    required List<int> winningIndexes,
+  }) = WonGameEvaluation;
+
+  const factory GameEvaluation.draw() = DrawGameEvaluation;
+
+  GameMark? get winningMark => switch (this) {
+    WonGameEvaluation(:final mark) => mark,
+    ActiveGameEvaluation() || DrawGameEvaluation() => null,
+  };
+
+  List<int> get winningIndexes => switch (this) {
+    WonGameEvaluation(:final winningIndexes) => winningIndexes,
+    ActiveGameEvaluation() || DrawGameEvaluation() => const [],
+  };
+
+  bool get isDraw => this is DrawGameEvaluation;
 }
 
 abstract final class GameRules {
@@ -28,17 +47,11 @@ abstract final class GameRules {
     for (final line in winningLines) {
       final mark = board.cells[line.first];
       if (mark != null && line.every((index) => board.cells[index] == mark)) {
-        return GameEvaluation(
-          winningMark: mark,
-          winningIndexes: line,
-          isDraw: false,
-        );
+        return GameEvaluation.won(mark: mark, winningIndexes: line);
       }
     }
-    return GameEvaluation(
-      winningMark: null,
-      winningIndexes: const [],
-      isDraw: board.availableMoves.isEmpty,
-    );
+    return board.availableMoves.isEmpty
+        ? const GameEvaluation.draw()
+        : const GameEvaluation.active();
   }
 }
