@@ -42,6 +42,7 @@ Repository currently contains:
 * Easy, Medium, and Minimax based Hard CPU strategies with controlled imperfection.
 * Riverpod orchestration with input locking, restart invalidation, and completed game persistence.
 * SharedPreferences backed game history and application settings behind repository contracts.
+* History retention capped at 100 completed matches with lazy list rendering.
 * Typed ARB localization with English as current supported locale.
 * Synthesized gameplay cues with persisted mute control.
 * Debug only Riverpod state observation.
@@ -66,11 +67,13 @@ Use pragmatic Clean Architecture with feature first organization:
 
 ```text
 Presentation -> Use cases -> Domain contracts <- Data
+Presentation -> Application ports <- Data
 ```
 
 Dependency rules:
 
 * Domain code stays independent from Flutter, Riverpod, GoRouter, and SharedPreferences.
+* Application ports define non-domain capabilities consumed by Presentation and implemented by Data.
 * Presentation may depend on domain entities, services, use cases, and public providers.
 * Data implements contracts owned by domain.
 * Features must not import another feature's presentation or internal implementation.
@@ -82,6 +85,7 @@ Expected game boundaries:
 * Immutable board and game state in game domain.
 * Pure game rule evaluation.
 * Pure CPU strategy interface and implementations.
+* Application audio port isolated from game rules.
 * Controller responsible for turn orchestration and asynchronous CPU lifecycle.
 * Presentation responsible only for rendering state and forwarding intent.
 

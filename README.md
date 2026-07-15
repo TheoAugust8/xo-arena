@@ -19,8 +19,8 @@
     <img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&amp;logoColor=white" alt="Flutter 3.44" />
     <img src="https://img.shields.io/badge/Riverpod-3-D92B35" alt="Riverpod 3" />
     <img src="https://img.shields.io/badge/Firebase-Hosting-FFCA28?logo=firebase&amp;logoColor=black" alt="Firebase Hosting" />
-    <a href="https://github.com/TheoAugust8/xo-arena/actions/workflows/quality.yml">
-      <img src="https://github.com/TheoAugust8/xo-arena/actions/workflows/quality.yml/badge.svg?branch=main" alt="Quality status" />
+    <a href="https://github.com/TheoAugust8/xo-arena/actions/workflows/deploy-web.yml">
+      <img src="https://github.com/TheoAugust8/xo-arena/actions/workflows/deploy-web.yml/badge.svg?branch=main" alt="Quality and deploy status" />
     </a>
   </p>
 </div>
@@ -101,8 +101,10 @@ Production runs on Firebase Hosting:
 
 **[xo-arena-web-20260714.web.app](https://xo-arena-web-20260714.web.app)**
 
-GitHub Actions builds every pull request to `main` and posts a Firebase preview
-URL. A push to `main` deploys production.
+One GitHub Actions workflow checks formatting, analysis, coverage, integration
+flows, and web release builds. Pull requests to `main` receive a Firebase
+preview only after the quality gate succeeds. Pushes to `main` deploy the same
+verified build artifact to production.
 
 Before first deployment, configure these GitHub repository values:
 
@@ -177,12 +179,14 @@ Project uses pragmatic Clean Architecture with feature first organization.
 
 ```text
 Presentation -> Use cases -> Domain contracts <- Data
+Presentation -> Application ports <- Data
 App composition -> Presentation + Domain + Data
 ```
 
 Dependency rules:
 
 * Domain stays independent from Flutter, Riverpod, GoRouter, and SharedPreferences.
+* Application ports define feature capabilities that are not domain rules, such as gameplay audio.
 * Repository contracts and business use cases live in Domain.
 * Domain sources are grouped by responsibility into entities, repositories, services, and use cases where business rules require them.
 * Presentation depends on domain concepts, useful use cases, and public providers.
@@ -210,9 +214,11 @@ lib/
     home/
       presentation/            Home screen
     game/
+      application/
+        ports/                 Gameplay audio contract
       domain/
         entities/              Immutable Board and Game aggregate
-        services/              Pure rules, CPU strategies, and audio port
+        services/              Pure rules and CPU strategies
         usecases/              Completed game persistence
       data/
         audio/                 Audioplayers implementation
@@ -273,13 +279,13 @@ Debug builds register `AppStateObserver` at the root `ProviderScope`. It logs pr
 
 ## Persistence
 
-`GameRecord` is a pure immutable Freezed domain model. `GameRecordDto` lives in Data and owns JSON conversion plus mapping to and from Domain. Records capture difficulty and symbol style snapshots while preserving the existing stored keys, enum names, and ISO 8601 dates.
+`GameRecord` is an explicit immutable domain value. Its controlled constructor and `copyWith` enforce nonblank identities plus the valid completed match move range. `GameRecordDto` lives in Data and owns wire format parsing plus mapping to and from Domain. Records capture difficulty and symbol style snapshots while preserving the existing stored keys, enum names, and ISO 8601 dates.
 
 `AppSettingsDto` applies the same generated JSON boundary to settings while `AppSettings` remains a storage independent domain value.
 
 `GameRecordRepository` belongs to domain. `GameRecordRepositoryImpl` delegates to `GameRecordLocalDataSource`, while `SharedPreferencesGameRecordLocalDataSource` owns storage format and local mutations.
 
-Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles. Invalid records are skipped individually, while a globally invalid payload returns an empty history. Failed writes remain visible as storage errors and do not block the next queued mutation.
+Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles. Storage retains the 100 newest completed matches. History renders records lazily and caps reveal motion at 420 milliseconds. Invalid records are skipped individually, while a globally invalid payload returns an empty history. Failed writes remain visible as storage errors and do not block the next queued mutation.
 
 ## Navigation
 
@@ -299,7 +305,7 @@ Routes use short fade and slide transitions. Flutter's reduced motion signal dis
 
 ## Sound design
 
-Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. Move cues use slightly longer envelopes to reduce the risk of being lost to mobile browser startup latency while staying unobtrusive. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game domain owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool` and `make sounds` reproduces every bundled cue. Domain rules and controller orchestration remain independent from audio playback details.
+Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. Move cues use slightly longer envelopes to reduce the risk of being lost to mobile browser startup latency while staying unobtrusive. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game application owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool` and `make sounds` reproduces every bundled cue. Domain rules and controller orchestration remain independent from audio playback details.
 
 Sound is enabled by default and can be muted from Settings. The choice persists with other game preferences. iOS playback uses the ambient audio category, respecting the Ring and Silent switch and mixing without interrupting other audio.
 
@@ -321,7 +327,9 @@ Current tests cover:
 * History loading, empty state, delete, clear, and mutation locking.
 * History summaries, metadata, retry, and mutation failure feedback.
 * History repository integration and reentrant mutation protection.
+* Lazy long history rendering, bounded reveal motion, and 100 record retention.
 * GameRecord equality and copying plus GameRecordDto wire compatibility.
+* GameRecord constructor and copy invariants in Domain.
 * Targeted record corruption, SharedPreferences write failures, serialization, and queue recovery.
 * Completed game persistence use case.
 * Preference defaults, generated JSON mapping, restoration, corruption fallback, no op updates, and ordered writes.
@@ -391,7 +399,7 @@ TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays c
 
 ### Why Freezed is used for value state and unions
 
-GameRecord and GameRecordStats benefit from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. `GameEvaluation` is a sealed Freezed union, making active, won, and draw results explicit and exhaustively matchable without impossible flag combinations. Board and Game stay explicit value types because their constructors enforce defensive collection copying, invariants, and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
+GameRecordStats benefits from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. `GameEvaluation` is a sealed Freezed union, making active, won, and draw results explicit and exhaustively matchable without impossible flag combinations. GameRecord, Board, and Game stay explicit value types because their constructors enforce invariants and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
 
 ### Why Hard uses controlled Minimax imperfection
 
