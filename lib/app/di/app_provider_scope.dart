@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:xo_arena/app/observers/app_state_observer.dart';
 import 'package:xo_arena/features/game/data/audio/synthesized_game_sound_player.dart';
 import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
@@ -65,6 +67,7 @@ class _AppProviderScopeState extends State<AppProviderScope> {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      observers: [if (kDebugMode) const AppStateObserver()],
       overrides: [
         settingsRepositoryProvider.overrideWithValue(_settingsRepository),
         gameRecordRepositoryProvider.overrideWithValue(_gameRecordRepository),
