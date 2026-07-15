@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
@@ -13,27 +14,26 @@ extension AppThemePreferenceUi on AppThemePreference {
 }
 
 extension GameDifficultyUi on GameDifficulty {
-  String get label => switch (this) {
-    GameDifficulty.easy => 'Easy',
-    GameDifficulty.medium => 'Medium',
-    GameDifficulty.hard => 'Hard',
+  String label(AppLocalizations l10n) => switch (this) {
+    GameDifficulty.easy => l10n.difficultyEasy,
+    GameDifficulty.medium => l10n.difficultyMedium,
+    GameDifficulty.hard => l10n.difficultyHard,
   };
 
-  String get description => switch (this) {
-    GameDifficulty.easy => 'CPU plays randomly. Perfect for beginners.',
-    GameDifficulty.medium =>
-      'CPU makes occasional mistakes. A balanced challenge.',
-    GameDifficulty.hard => 'CPU plays optimally. Best outcome is a draw.',
+  String description(AppLocalizations l10n) => switch (this) {
+    GameDifficulty.easy => l10n.difficultyEasyDescription,
+    GameDifficulty.medium => l10n.difficultyMediumDescription,
+    GameDifficulty.hard => l10n.difficultyHardDescription,
   };
 }
 
 extension GameSymbolSkinUi on GameSymbolSkin {
-  String get label => switch (this) {
-    GameSymbolSkin.classic => 'Classic',
-    GameSymbolSkin.geometric => 'Geometric',
-    GameSymbolSkin.tennis => 'Tennis',
-    GameSymbolSkin.football => 'Football',
-    GameSymbolSkin.poker => 'Poker',
-    GameSymbolSkin.basketball => 'Basketball',
+  String label(AppLocalizations l10n) => switch (this) {
+    GameSymbolSkin.classic => l10n.skinClassic,
+    GameSymbolSkin.geometric => l10n.skinGeometric,
+    GameSymbolSkin.tennis => l10n.skinTennis,
+    GameSymbolSkin.football => l10n.skinFootball,
+    GameSymbolSkin.poker => l10n.skinPoker,
+    GameSymbolSkin.basketball => l10n.skinBasketball,
   };
 }

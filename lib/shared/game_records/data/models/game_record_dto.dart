@@ -32,7 +32,7 @@ final class GameRecordDto {
       _$GameRecordDtoFromJson(json);
 
   factory GameRecordDto.fromDomain(GameRecord record) {
-    final dto = GameRecordDto(
+    return GameRecordDto(
       id: record.id,
       playerOneName: record.playerOneName,
       playerTwoName: record.playerTwoName,
@@ -42,14 +42,11 @@ final class GameRecordDto {
       difficulty: record.difficulty,
       skin: record.skin,
     );
-    dto._validate();
-    return dto;
   }
 
   Map<String, dynamic> toJson() => _$GameRecordDtoToJson(this);
 
   GameRecord toDomain() {
-    _validate();
     return GameRecord(
       id: id,
       playerOneName: playerOneName,
@@ -60,22 +57,6 @@ final class GameRecordDto {
       difficulty: difficulty,
       skin: skin,
     );
-  }
-
-  void _validate() {
-    if (id.trim().isEmpty) {
-      throw const FormatException('Game record id must not be blank.');
-    }
-    if (playerOneName.trim().isEmpty || playerTwoName.trim().isEmpty) {
-      throw const FormatException(
-        'Game record player names must not be blank.',
-      );
-    }
-    if (moveCount < 5 || moveCount > 9) {
-      throw const FormatException(
-        'Game record move count must be from 5 to 9.',
-      );
-    }
   }
 }
 

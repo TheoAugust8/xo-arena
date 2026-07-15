@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:xo_arena/app/di/app_provider_scope.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/shared/game_records/data/repositories/game_record_repository_impl.dart';
 import 'package:xo_arena/shared/game_records/domain/repositories/game_record_repository.dart';

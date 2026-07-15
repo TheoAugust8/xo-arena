@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 
 import '../../tool/game_sound_synthesizer.dart';
 
@@ -30,6 +30,16 @@ void main() {
       final duration = sampleCount / GameSoundSynthesizer.sampleRate;
 
       expect(duration, lessThan(0.55));
+    }
+  });
+
+  test('keeps move cues audible through mobile web startup latency', () {
+    for (final cue in [GameSoundCue.playerMove, GameSoundCue.cpuMove]) {
+      final bytes = GameSoundSynthesizer.synthesize(cue);
+      final sampleCount = (bytes.length - 44) ~/ 2;
+      final duration = sampleCount / GameSoundSynthesizer.sampleRate;
+
+      expect(duration, greaterThanOrEqualTo(0.16));
     }
   });
 }

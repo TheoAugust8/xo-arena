@@ -39,18 +39,18 @@ class _ClearHistoryDialog extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.space16),
               Text(
-                'Clear all match history?',
+                context.l10n.clearHistoryTitle,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: tokens.foreground,
-                  fontFamily: 'Barlow Condensed',
+                  fontFamily: AppFonts.display,
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: AppSpacing.space8),
               Text(
-                'Completed matches will be removed permanently.',
+                context.l10n.clearHistoryBody,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: tokens.mutedForeground,
@@ -66,7 +66,7 @@ class _ClearHistoryDialog extends StatelessWidget {
                       height: 48,
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('CANCEL'),
+                        child: Text(context.l10n.cancel),
                       ),
                     ),
                   ),
@@ -81,7 +81,7 @@ class _ClearHistoryDialog extends StatelessWidget {
                           Icons.delete_outline_rounded,
                           size: 18,
                         ),
-                        label: const Text('CLEAR'),
+                        label: Text(context.l10n.clear),
                       ),
                     ),
                   ),

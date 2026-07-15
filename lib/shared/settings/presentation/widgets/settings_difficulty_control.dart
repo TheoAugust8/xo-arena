@@ -50,11 +50,14 @@ class _DifficultyOption extends StatelessWidget {
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 180);
+    final label = value.label(context.l10n);
     return Semantics(
       key: ValueKey('settings_difficulty_${value.name}'),
       button: true,
       selected: selected,
-      label: '${value.label} difficulty${selected ? ', selected' : ''}',
+      label: selected
+          ? context.l10n.difficultyOptionSelected(label)
+          : context.l10n.difficultyOption(label),
       onTap: onPressed,
       excludeSemantics: true,
       child: Material(
@@ -78,7 +81,7 @@ class _DifficultyOption extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  value.label,
+                  label,
                   maxLines: 1,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: selected ? Colors.white : tokens.foregroundSecondary,

@@ -1,11 +1,17 @@
+// AppProviderScope owns the root ProviderScope. The lint only recognizes a
+// ProviderScope passed directly to runApp as a root scope.
+// ignore_for_file: riverpod_lint/scoped_providers_should_specify_dependencies
+
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:xo_arena/app/observers/app_state_observer.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 import 'package:xo_arena/features/game/data/audio/synthesized_game_sound_player.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/shared/game_records/data/datasources/shared_preferences_game_record_local_data_source.dart';
 import 'package:xo_arena/shared/game_records/data/repositories/game_record_repository_impl.dart';
@@ -65,6 +71,7 @@ class _AppProviderScopeState extends State<AppProviderScope> {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      observers: [if (kDebugMode) const AppStateObserver()],
       overrides: [
         settingsRepositoryProvider.overrideWithValue(_settingsRepository),
         gameRecordRepositoryProvider.overrideWithValue(_gameRecordRepository),

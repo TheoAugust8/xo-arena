@@ -1,4 +1,4 @@
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 import 'package:xo_arena/features/game/domain/entities/game.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_state.dart';
 

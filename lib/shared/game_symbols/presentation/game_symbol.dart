@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:xo_arena/core/design_system/app_fonts.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 
@@ -36,7 +37,7 @@ class GameSymbol extends StatelessWidget {
       GameSymbolSkin.classic => Text(
         symbol,
         style: TextStyle(
-          fontFamily: 'Barlow Condensed',
+          fontFamily: AppFonts.display,
           color: color,
           fontSize: size,
           height: 0.8,

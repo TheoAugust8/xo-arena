@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/features/game/domain/entities/game.dart';
+import 'package:xo_arena/features/game/domain/services/cpu_strategy.dart';
 import 'package:xo_arena/features/game/presentation/notifiers/game_notifier.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
@@ -105,6 +106,70 @@ void main() {
     );
     expect(repository.records.single.difficulty, GameDifficulty.medium);
     expect(repository.records.single.skin, GameSymbolSkin.classic);
+    expect(container.read(gameProvider).cpuScore, 1);
+    expect(container.read(gameProvider).playerScore, 0);
+  });
+
+  test(
+    'scores and persists a Human win then preserves score on restart',
+    () async {
+      final repository = _RecordingGameRecordRepository();
+      final strategy = _ScriptedCpuStrategy([3, 4]);
+      final container = _gameContainer(
+        repository: repository,
+        strategy: strategy,
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(gameProvider, (_, _) {});
+      addTearDown(subscription.close);
+      final notifier = container.read(gameProvider.notifier);
+
+      await _playTurn(notifier, 0);
+      await _playTurn(notifier, 1);
+      await _playTurn(notifier, 2);
+
+      final completed = container.read(gameProvider);
+      expect(completed.game.winner, GamePlayer.human);
+      expect(completed.playerScore, 1);
+      expect(completed.cpuScore, 0);
+      expect(completed.isCpuThinking, isFalse);
+      expect(repository.records, hasLength(1));
+      expect(repository.records.single.outcome, GameOutcome.playerOneWin);
+
+      notifier.restart();
+
+      final restarted = container.read(gameProvider);
+      expect(restarted.game, Game.initial());
+      expect(restarted.playerScore, 1);
+      expect(restarted.cpuScore, 0);
+      expect(strategy.remainingMoves, isEmpty);
+    },
+  );
+
+  test('persists a draw without changing session scores', () async {
+    final repository = _RecordingGameRecordRepository();
+    final strategy = _ScriptedCpuStrategy([1, 4, 5, 6]);
+    final container = _gameContainer(
+      repository: repository,
+      strategy: strategy,
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(gameProvider, (_, _) {});
+    addTearDown(subscription.close);
+    final notifier = container.read(gameProvider.notifier);
+
+    for (final move in [0, 2, 3, 7, 8]) {
+      await _playTurn(notifier, move);
+    }
+
+    final completed = container.read(gameProvider);
+    expect(completed.game.status, GameStatus.draw);
+    expect(completed.playerScore, 0);
+    expect(completed.cpuScore, 0);
+    expect(completed.isCpuThinking, isFalse);
+    expect(repository.records, hasLength(1));
+    expect(repository.records.single.outcome, GameOutcome.draw);
+    expect(strategy.remainingMoves, isEmpty);
   });
 
   test('exposes a completed game persistence failure', () async {
@@ -239,6 +304,37 @@ void main() {
 Future<void> _playTurn(GameNotifier notifier, int index) async {
   notifier.play(index);
   await Future<void>.delayed(Duration.zero);
+}
+
+ProviderContainer _gameContainer({
+  required GameRecordRepository repository,
+  required CpuStrategy strategy,
+}) {
+  return ProviderContainer(
+    overrides: [
+      gameRecordRepositoryProvider.overrideWithValue(repository),
+      cpuTurnDelayProvider.overrideWithValue(Duration.zero),
+      cpuStrategyResolverProvider.overrideWithValue((_) => strategy),
+      settingsRepositoryProvider.overrideWithValue(_MemorySettingsRepository()),
+    ],
+  );
+}
+
+final class _ScriptedCpuStrategy implements CpuStrategy {
+  _ScriptedCpuStrategy(Iterable<int> moves) : _moves = [...moves];
+
+  final List<int> _moves;
+
+  List<int> get remainingMoves => List.unmodifiable(_moves);
+
+  @override
+  int chooseMove(Game game) {
+    final move = _moves.removeAt(0);
+    if (!game.board.availableMoves.contains(move)) {
+      throw StateError('Scripted CPU move $move is unavailable.');
+    }
+    return move;
+  }
 }
 
 class _RecordingGameRecordRepository implements GameRecordRepository {

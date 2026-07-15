@@ -1,25 +1,27 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
+import 'package:xo_arena/core/constants/app_storage_keys.dart';
 import 'package:xo_arena/shared/game_records/data/datasources/game_record_local_data_source.dart';
 import 'package:xo_arena/shared/game_records/data/models/game_record_dto.dart';
+import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 
 class SharedPreferencesGameRecordLocalDataSource
     implements GameRecordLocalDataSource {
   SharedPreferencesGameRecordLocalDataSource(this._preferences);
 
-  static const _recordsKey = 'game_records';
+  static const maxStoredRecords = 100;
 
   final SharedPreferences _preferences;
+  // SharedPreferences has no transaction API. Serializing mutations prevents
+  // overlapping read, modify, write cycles from losing records.
   Future<void> _mutationQueue = Future.value();
 
   @override
   Future<List<GameRecord>> getAll() => _mutationQueue.then((_) => _readAll());
 
   Future<List<GameRecord>> _readAll() async {
-    final encodedRecords = _preferences.getString(_recordsKey);
+    final encodedRecords = _preferences.getString(AppStorageKeys.gameRecords);
     if (encodedRecords == null) {
       return [];
     }
@@ -52,7 +54,7 @@ class SharedPreferencesGameRecordLocalDataSource
     records.sort(
       (first, second) => second.completedAt.compareTo(first.completedAt),
     );
-    return records;
+    return records.take(maxStoredRecords).toList();
   }
 
   @override
@@ -60,7 +62,10 @@ class SharedPreferencesGameRecordLocalDataSource
     final records = await _readAll();
     records.removeWhere((existingRecord) => existingRecord.id == record.id);
     records.add(record);
-    await _write(records);
+    records.sort(
+      (first, second) => second.completedAt.compareTo(first.completedAt),
+    );
+    await _write(records.take(maxStoredRecords).toList());
   });
 
   @override
@@ -72,8 +77,8 @@ class SharedPreferencesGameRecordLocalDataSource
 
   @override
   Future<void> clear() => _enqueueMutation(() async {
-    if (!_preferences.containsKey(_recordsKey)) return;
-    final removed = await _preferences.remove(_recordsKey);
+    if (!_preferences.containsKey(AppStorageKeys.gameRecords)) return;
+    final removed = await _preferences.remove(AppStorageKeys.gameRecords);
     if (!removed) {
       throw StateError('Unable to clear game records.');
     }
@@ -91,7 +96,10 @@ class SharedPreferencesGameRecordLocalDataSource
           .map((record) => GameRecordDto.fromDomain(record).toJson())
           .toList(),
     );
-    final saved = await _preferences.setString(_recordsKey, encodedRecords);
+    final saved = await _preferences.setString(
+      AppStorageKeys.gameRecords,
+      encodedRecords,
+    );
     if (!saved) {
       throw StateError('Unable to persist game records.');
     }

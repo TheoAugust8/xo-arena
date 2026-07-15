@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xo_arena/core/constants/app_storage_keys.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/settings/data/datasources/settings_local_data_source.dart';
@@ -17,7 +18,7 @@ void main() {
 
   test('restores theme and game settings', () async {
     SharedPreferences.setMockInitialValues({
-      SharedPreferencesSettingsLocalDataSource.settingsKey:
+      AppStorageKeys.settings:
           '{"theme":"light","difficulty":"medium","skin":"football","soundEnabled":false}',
     });
     final dataSource = SharedPreferencesSettingsLocalDataSource(
@@ -38,7 +39,7 @@ void main() {
   test('restores poker and basketball skins', () async {
     for (final skin in [GameSymbolSkin.poker, GameSymbolSkin.basketball]) {
       SharedPreferences.setMockInitialValues({
-        SharedPreferencesSettingsLocalDataSource.settingsKey:
+        AppStorageKeys.settings:
             '{"theme":"system","difficulty":"hard","skin":"${skin.name}","soundEnabled":true}',
       });
       final dataSource = SharedPreferencesSettingsLocalDataSource(
@@ -51,7 +52,7 @@ void main() {
 
   test('returns defaults when stored settings are corrupt', () async {
     SharedPreferences.setMockInitialValues({
-      SharedPreferencesSettingsLocalDataSource.settingsKey: '{not-json',
+      AppStorageKeys.settings: '{not-json',
     });
     final dataSource = SharedPreferencesSettingsLocalDataSource(
       await SharedPreferences.getInstance(),
@@ -74,10 +75,31 @@ void main() {
     );
 
     expect(
-      preferences.getString(
-        SharedPreferencesSettingsLocalDataSource.settingsKey,
-      ),
+      preferences.getString(AppStorageKeys.settings),
       '{"theme":"light","difficulty":"easy","skin":"geometric","soundEnabled":true}',
     );
   });
+
+  test('reports a failed settings write', () async {
+    final dataSource = SharedPreferencesSettingsLocalDataSource(
+      _FailingWriteSharedPreferences(),
+    );
+
+    await expectLater(
+      dataSource.save(AppSettings.defaults),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          'Unable to persist app settings.',
+        ),
+      ),
+    );
+  });
+}
+
+final class _FailingWriteSharedPreferences extends Fake
+    implements SharedPreferences {
+  @override
+  Future<bool> setString(String key, String value) async => false;
 }

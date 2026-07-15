@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:xo_arena/core/constants/app_routes.dart';
+import 'package:xo_arena/core/design_system/app_fonts.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
-import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
 import 'package:xo_arena/core/design_system/components/app_logo.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
-import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
+import 'package:xo_arena/shared/game_records/domain/entities/game_record_participants.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record_stats.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
+import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
+import 'package:xo_arena/shared/settings/presentation/settings_ui.dart';
 
 part 'widgets/clear_history_dialog.dart';
+part 'widgets/history_card.dart';
 part 'widgets/history_header.dart';
 part 'widgets/history_list.dart';
-part 'widgets/history_summary.dart';
-part 'widgets/history_card.dart';
 part 'widgets/history_states.dart';
+part 'widgets/history_summary.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -39,7 +42,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       ref.invalidate(gameRecordsProvider);
       return true;
     } on Object {
-      _showMutationError('Unable to delete match.');
+      if (!mounted) return false;
+      _showMutationError(context.l10n.unableToDeleteMatch);
       return false;
     } finally {
       if (mounted) setState(() => _isMutating = false);
@@ -60,7 +64,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       if (!mounted) return;
       ref.invalidate(gameRecordsProvider);
     } on Object {
-      _showMutationError('Unable to clear match history.');
+      if (!mounted) return;
+      _showMutationError(context.l10n.unableToClearHistory);
     } finally {
       if (mounted) setState(() => _isMutating = false);
     }
@@ -86,7 +91,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 _HistoryHeader(
                   isMutating: _isMutating,
                   hasRecords: history.value?.isNotEmpty ?? false,
-                  onBack: () => context.go('/'),
+                  onBack: () => context.go(AppRoutes.home),
                   onClear: _confirmClear,
                 ),
                 const Padding(
@@ -97,7 +102,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   child: history.when(
                     data: (records) {
                       if (records.isEmpty) {
-                        return _EmptyHistory(onPlay: () => context.go('/game'));
+                        return _EmptyHistory(
+                          onPlay: () => context.go(AppRoutes.game),
+                        );
                       }
                       final newestFirst = [...records]
                         ..sort(

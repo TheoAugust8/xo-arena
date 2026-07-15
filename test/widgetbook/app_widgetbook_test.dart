@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widgetbook/widgetbook.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import '../../tool/widgetbook/app_widgetbook.dart';
 
 void main() {
@@ -77,11 +78,19 @@ void main() {
         .useCases
         .first;
 
-    await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    await tester.pumpWidget(
+      const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SizedBox(),
+      ),
+    );
     final preview = useCase.builder(tester.element(find.byType(SizedBox)));
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SizedBox(width: 390, height: 656, child: preview)),
       ),
     );

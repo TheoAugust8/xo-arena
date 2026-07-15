@@ -16,21 +16,21 @@ class _HistoryCard extends StatelessWidget {
     final tokens = context.appTokens;
     final (label, color, background) = switch (record.outcome) {
       GameOutcome.playerOneWin => (
-        record.playerOneName == 'You'
-            ? 'YOU WIN'
-            : '${record.playerOneName} won',
+        record.playerOneName == GameRecordParticipants.human
+            ? context.l10n.youWinCompact
+            : context.l10n.playerWon(record.playerOneName),
         tokens.win,
         tokens.win.withValues(alpha: 0.12),
       ),
       GameOutcome.playerTwoWin => (
-        record.playerTwoName == 'CPU'
-            ? 'CPU WINS'
-            : '${record.playerTwoName} won',
+        record.playerTwoName == GameRecordParticipants.cpu
+            ? context.l10n.cpuWins
+            : context.l10n.playerWon(record.playerTwoName),
         tokens.primary,
         tokens.primary.withValues(alpha: 0.12),
       ),
       GameOutcome.draw => (
-        'DRAW',
+        context.l10n.draw,
         tokens.draw,
         tokens.draw.withValues(alpha: 0.1),
       ),
@@ -69,7 +69,6 @@ class _HistoryCard extends StatelessWidget {
               vertical: AppSpacing.space12,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
                   width: 4,
@@ -143,7 +142,7 @@ class _OutcomeBadge extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: color,
-            fontFamily: 'Barlow Condensed',
+            fontFamily: AppFonts.display,
             fontSize: 13,
             height: 1,
             letterSpacing: 0.5,
@@ -188,11 +187,11 @@ class _CardMetadata extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            Text(record.difficulty.label, style: style),
+            Text(record.difficulty.label(context.l10n), style: style),
           ],
         ),
-        Text('${record.moveCount} moves', style: style),
-        Text(record.skin.label, style: style),
+        Text(context.l10n.moveCount(record.moveCount), style: style),
+        Text(record.skin.label(context.l10n), style: style),
       ],
     );
   }
@@ -239,7 +238,7 @@ class _CompletedTime extends StatelessWidget {
     final absolute =
         '${localizations.formatShortDate(local)} ${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(local))}';
     return Semantics(
-      label: 'Completed $absolute',
+      label: context.l10n.completedAt(absolute),
       excludeSemantics: true,
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -254,7 +253,7 @@ class _CompletedTime extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              _relativeTime(local),
+              _relativeTime(local, context.l10n),
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(fontSize: 10, height: 1),
@@ -265,11 +264,11 @@ class _CompletedTime extends StatelessWidget {
     );
   }
 
-  String _relativeTime(DateTime time) {
+  String _relativeTime(DateTime time, AppLocalizations l10n) {
     final difference = DateTime.now().difference(time);
-    if (difference.inMinutes < 1) return 'Just now';
-    if (difference.inHours < 1) return '${difference.inMinutes}m ago';
-    if (difference.inDays < 1) return '${difference.inHours}h ago';
-    return '${difference.inDays}d ago';
+    if (difference.inMinutes < 1) return l10n.justNow;
+    if (difference.inHours < 1) return l10n.minutesAgo(difference.inMinutes);
+    if (difference.inDays < 1) return l10n.hoursAgo(difference.inHours);
+    return l10n.daysAgo(difference.inDays);
   }
 }

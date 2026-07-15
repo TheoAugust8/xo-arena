@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:xo_arena/core/design_system/app_theme.dart';
 import 'package:xo_arena/core/design_system/components/app_icon_control.dart';
 import 'package:xo_arena/features/history/presentation/history_screen.dart';
-import 'package:xo_arena/core/design_system/app_theme.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_records/domain/entities/game_record.dart';
 import 'package:xo_arena/shared/game_records/domain/repositories/game_record_repository.dart';
@@ -24,7 +25,12 @@ void main() {
           gameRecordsProvider.overrideWith((ref) => repository.getAll()),
           gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
-        child: MaterialApp(theme: AppTheme.dark, home: const HistoryScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const HistoryScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -60,6 +66,33 @@ void main() {
     );
   });
 
+  testWidgets('builds long history lazily with bounded reveal motion', (
+    tester,
+  ) async {
+    final repository = InMemoryGameRecordRepository();
+    for (var index = 0; index < 30; index++) {
+      await repository.save(
+        _record(
+          id: 'game-$index',
+          completedAt: DateTime.utc(2026).add(Duration(days: index)),
+        ),
+      );
+    }
+
+    await _pumpHistory(tester, repository);
+
+    final list = tester.widget<ListView>(find.byType(ListView));
+    expect(list.childrenDelegate, isA<SliverChildBuilderDelegate>());
+    expect(
+      tester
+          .widgetList<TweenAnimationBuilder<double>>(
+            find.byType(TweenAnimationBuilder<double>),
+          )
+          .map((animation) => animation.duration),
+      everyElement(lessThanOrEqualTo(const Duration(milliseconds: 420))),
+    );
+  });
+
   testWidgets('shows a draw without claiming a winner', (tester) async {
     final repository = InMemoryGameRecordRepository();
     await repository.save(_record(id: 'draw', outcome: GameOutcome.draw));
@@ -85,18 +118,16 @@ void main() {
     final summary = find.byKey(const ValueKey('history_summary'));
     expect(summary, findsOneWidget);
     expect(tester.getRect(summary).height, 64);
-    expect(find.text('WIN'), findsOneWidget);
+    expect(find.text('WIN RATE'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('1 win, 1 draw, 1 loss, 33% win rate'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('uses a compact match card', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(
-      _record(
-        id: 'game-1',
-        difficulty: GameDifficulty.hard,
-        skin: GameSymbolSkin.classic,
-      ),
-    );
+    await repository.save(_record(id: 'game-1'));
 
     await _pumpHistory(tester, repository);
 
@@ -114,7 +145,6 @@ void main() {
     await repository.save(
       _record(
         id: 'game-1',
-        outcome: GameOutcome.playerOneWin,
         difficulty: GameDifficulty.medium,
         skin: GameSymbolSkin.tennis,
       ),
@@ -123,7 +153,7 @@ void main() {
     await _pumpHistory(tester, repository);
 
     expect(find.text('Match History'), findsOneWidget);
-    expect(find.text('WIN'), findsOneWidget);
+    expect(find.text('WIN RATE'), findsOneWidget);
     expect(find.text('100%'), findsOneWidget);
     expect(find.textContaining('Medium'), findsOneWidget);
     expect(find.textContaining('Tennis'), findsOneWidget);
@@ -160,7 +190,7 @@ void main() {
 
   testWidgets('deletes an individual completed game', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-1'));
 
     await _pumpHistory(tester, repository);
     await tester.drag(
@@ -175,7 +205,7 @@ void main() {
 
   testWidgets('clears all completed games', (tester) async {
     final repository = InMemoryGameRecordRepository();
-    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-1'));
     await repository.save(_record(id: 'game-2', playerOneName: 'Bailey'));
 
     await _pumpHistory(tester, repository);
@@ -213,7 +243,7 @@ void main() {
     tester,
   ) async {
     final repository = PendingDeleteGameRecordRepository();
-    await repository.save(_record(id: 'game-1', playerOneName: 'Alex'));
+    await repository.save(_record(id: 'game-1'));
 
     await _pumpHistory(tester, repository);
     await tester.drag(
@@ -276,8 +306,39 @@ void main() {
     await tester.pumpAndSettle();
     await repository.deleteStarted.future;
 
-    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    await tester.pumpWidget(
+      const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SizedBox.shrink(),
+      ),
+    );
     repository.completeDelete();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ignores a delete failure after screen disposal', (tester) async {
+    final repository = PendingFailingDeleteGameRecordRepository();
+    await repository.save(_record(id: 'game-1'));
+
+    await _pumpHistory(tester, repository);
+    await tester.drag(
+      find.byKey(const Key('dismiss-game-1')),
+      const Offset(-500, 0),
+    );
+    await tester.pumpAndSettle();
+    await repository.deleteStarted.future;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SizedBox.shrink(),
+      ),
+    );
+    repository.failDelete();
     await tester.pump();
 
     expect(tester.takeException(), isNull);
@@ -295,7 +356,12 @@ void main() {
           }),
           gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
-        child: MaterialApp(theme: AppTheme.dark, home: const HistoryScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          theme: AppTheme.dark,
+          home: const HistoryScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -328,11 +394,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final repository = InMemoryGameRecordRepository();
     await repository.save(
-      _record(
-        id: 'game-1',
-        difficulty: GameDifficulty.hard,
-        skin: GameSymbolSkin.geometric,
-      ),
+      _record(id: 'game-1', skin: GameSymbolSkin.geometric),
     );
 
     await tester.pumpWidget(
@@ -342,6 +404,8 @@ void main() {
           gameRecordRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.dark,
           home: const MediaQuery(
             data: MediaQueryData(
@@ -386,8 +450,38 @@ void main() {
     await tester.pump();
     await repository.clearStarted.future;
 
-    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    await tester.pumpWidget(
+      const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SizedBox.shrink(),
+      ),
+    );
     repository.completeClear();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ignores a clear failure after screen disposal', (tester) async {
+    final repository = PendingFailingClearGameRecordRepository();
+    await repository.save(_record(id: 'game-1'));
+
+    await _pumpHistory(tester, repository);
+    await tester.tap(find.byKey(const Key('clear-history')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('CLEAR').last);
+    await tester.pump();
+    await repository.clearStarted.future;
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: SizedBox.shrink(),
+      ),
+    );
+    repository.failClear();
     await tester.pump();
 
     expect(tester.takeException(), isNull);
@@ -417,7 +511,12 @@ Future<void> _pumpHistory(
         gameRecordsProvider.overrideWith((ref) => repository.getAll()),
         gameRecordRepositoryProvider.overrideWithValue(repository),
       ],
-      child: MaterialApp(theme: AppTheme.dark, home: const HistoryScreen()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: AppTheme.dark,
+        home: const HistoryScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -460,6 +559,22 @@ class PendingDeleteGameRecordRepository extends InMemoryGameRecordRepository {
   void completeDelete() => _deleteCompleter.complete();
 }
 
+class PendingFailingDeleteGameRecordRepository
+    extends InMemoryGameRecordRepository {
+  final deleteStarted = Completer<void>();
+  final _deleteCompleter = Completer<void>();
+
+  @override
+  Future<void> delete(String id) async {
+    deleteStarted.complete();
+    await _deleteCompleter.future;
+  }
+
+  void failDelete() => _deleteCompleter.completeError(
+    StateError('delete failed after disposal'),
+  );
+}
+
 class ReentrantDeleteGameRecordRepository extends InMemoryGameRecordRepository {
   final deleteStarted = Completer<void>();
   final _deleteCompleter = Completer<void>();
@@ -490,6 +605,21 @@ class PendingClearGameRecordRepository extends InMemoryGameRecordRepository {
   }
 
   void completeClear() => _clearCompleter.complete();
+}
+
+class PendingFailingClearGameRecordRepository
+    extends InMemoryGameRecordRepository {
+  final clearStarted = Completer<void>();
+  final _clearCompleter = Completer<void>();
+
+  @override
+  Future<void> clear() async {
+    clearStarted.complete();
+    await _clearCompleter.future;
+  }
+
+  void failClear() =>
+      _clearCompleter.completeError(StateError('clear failed after disposal'));
 }
 
 class FailingDeleteGameRecordRepository extends InMemoryGameRecordRepository {

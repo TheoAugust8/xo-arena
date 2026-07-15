@@ -17,10 +17,13 @@ class _SkinTile extends StatelessWidget {
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 180);
+    final label = skin.label(context.l10n);
     return Semantics(
       button: true,
       selected: selected,
-      label: '${skin.label} symbol skin${selected ? ', selected' : ''}',
+      label: selected
+          ? context.l10n.symbolSkinOptionSelected(label)
+          : context.l10n.symbolSkinOption(label),
       onTap: onPressed,
       excludeSemantics: true,
       child: Material(
@@ -53,7 +56,7 @@ class _SkinTile extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      skin.label,
+                      label,
                       maxLines: 1,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: selected

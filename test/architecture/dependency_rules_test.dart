@@ -39,6 +39,26 @@ void main() {
     expect(violations, isEmpty, reason: violations.join('\n'));
   });
 
+  test('application stays independent from frameworks and outer layers', () {
+    const forbiddenPackages = [
+      'package:flutter/',
+      'package:flutter_riverpod/',
+      'package:go_router/',
+      'package:riverpod_annotation/',
+      'package:shared_preferences/',
+      'package:audioplayers/',
+    ];
+    final violations = _violations(
+      sourceFiles.where((file) => file.path.contains('/application/')),
+      (importPath, _) =>
+          forbiddenPackages.any(importPath.startsWith) ||
+          importPath.contains('/data/') ||
+          importPath.contains('/presentation/'),
+    );
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
   test('data never imports presentation', () {
     final violations = _violations(
       sourceFiles.where((file) => file.path.contains('/data/')),
@@ -106,6 +126,16 @@ void main() {
       (importPath, _) =>
           importPath.startsWith('package:xo_arena/shared/settings/'),
     );
+
+    expect(violations, isEmpty, reason: violations.join('\n'));
+  });
+
+  test('game domain excludes presentation audio concerns', () {
+    final violations = sourceFiles
+        .where((file) => file.path.contains('/features/game/domain/'))
+        .map((file) => file.path)
+        .where((path) => RegExp(r'(?:audio|sound)').hasMatch(path))
+        .toList();
 
     expect(violations, isEmpty, reason: violations.join('\n'));
   });

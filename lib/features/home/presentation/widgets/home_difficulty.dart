@@ -66,8 +66,10 @@ class _DifficultyOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final label =
-        '${difficulty.label} difficulty${selected ? ', selected' : ''}';
+    final difficultyLabel = difficulty.label(context.l10n);
+    final label = selected
+        ? context.l10n.difficultyOptionSelected(difficultyLabel)
+        : context.l10n.difficultyOption(difficultyLabel);
     return Semantics(
       label: label,
       button: true,
@@ -94,7 +96,7 @@ class _DifficultyOption extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                difficulty.label,
+                difficultyLabel,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: selected ? Colors.white : tokens.foregroundSecondary,
                   fontSize: 12,

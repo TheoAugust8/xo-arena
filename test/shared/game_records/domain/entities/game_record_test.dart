@@ -37,4 +37,40 @@ void main() {
     expect(record.difficulty, GameDifficulty.medium);
     expect(record.skin, GameSymbolSkin.basketball);
   });
+
+  test('rejects a blank record id', () {
+    expect(() => _record(id: ' '), throwsArgumentError);
+  });
+
+  test('rejects blank participant names', () {
+    expect(() => _record(playerOneName: ''), throwsArgumentError);
+    expect(() => _record(playerTwoName: '  '), throwsArgumentError);
+  });
+
+  test('rejects move counts outside a completed game range', () {
+    expect(() => _record(moveCount: 4), throwsArgumentError);
+    expect(() => _record(moveCount: 10), throwsArgumentError);
+  });
+
+  test('copyWith preserves domain invariants', () {
+    expect(() => _record().copyWith(moveCount: 4), throwsArgumentError);
+  });
+}
+
+GameRecord _record({
+  String id = 'game-1',
+  String playerOneName = 'You',
+  String playerTwoName = 'CPU',
+  int moveCount = 7,
+}) {
+  return GameRecord(
+    id: id,
+    playerOneName: playerOneName,
+    playerTwoName: playerTwoName,
+    outcome: GameOutcome.playerOneWin,
+    moveCount: moveCount,
+    completedAt: DateTime.utc(2026, 7, 13),
+    difficulty: GameDifficulty.medium,
+    skin: GameSymbolSkin.classic,
+  );
 }

@@ -21,7 +21,7 @@ class _HistorySummary extends StatelessWidget {
       error: (_, _) => TextButton.icon(
         onPressed: onRetry,
         icon: const Icon(Icons.refresh),
-        label: const Text('Retry stats'),
+        label: Text(context.l10n.retryStats),
       ),
     );
   }
@@ -36,9 +36,9 @@ class _StatsStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final values = [
-      (stats.wins, 'WINS', tokens.win),
-      (stats.draws, 'DRAWS', tokens.draw),
-      (stats.losses, 'LOSSES', tokens.primary),
+      (stats.wins, context.l10n.wins, tokens.win),
+      (stats.draws, context.l10n.draws, tokens.draw),
+      (stats.losses, context.l10n.losses, tokens.primary),
     ];
     return SizedBox(
       width: double.infinity,

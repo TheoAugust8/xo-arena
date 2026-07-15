@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/core/design_system/components/app_logo.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 
-const launchDuration = Duration(milliseconds: 2900);
-const launchExitDuration = Duration(milliseconds: 500);
+const launchDuration = Duration(milliseconds: 1800);
+const launchExitDuration = Duration(milliseconds: 300);
 
 class StartupLaunch extends StatefulWidget {
   const StartupLaunch({required this.child, super.key});
@@ -76,8 +77,8 @@ class _LaunchScreenState extends State<LaunchScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: launchDuration)
-      ..forward();
+    _controller = AnimationController(vsync: this, duration: launchDuration);
+    unawaited(_controller.forward());
   }
 
   @override
@@ -90,7 +91,7 @@ class _LaunchScreenState extends State<LaunchScreen>
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     return Semantics(
-      label: 'XO Arena launch screen',
+      label: context.l10n.launchSemantics,
       container: true,
       excludeSemantics: true,
       child: ColoredBox(
@@ -148,7 +149,7 @@ class _LaunchScreenState extends State<LaunchScreen>
                       progress: arena,
                       offset: 8,
                       child: Text(
-                        'ARENA',
+                        context.l10n.brandArena,
                         style: Theme.of(context).textTheme.labelMedium
                             ?.copyWith(
                               color: tokens.primary,
@@ -162,7 +163,7 @@ class _LaunchScreenState extends State<LaunchScreen>
                       progress: title,
                       offset: 18,
                       child: Text(
-                        'XO ARENA',
+                        context.l10n.brandName,
                         style: Theme.of(
                           context,
                         ).textTheme.displayMedium?.copyWith(fontSize: 42),
@@ -172,7 +173,7 @@ class _LaunchScreenState extends State<LaunchScreen>
                     _Reveal(
                       progress: tagline,
                       child: Text(
-                        'Prove your edge against the machine.',
+                        context.l10n.brandTagline,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: tokens.mutedForeground,

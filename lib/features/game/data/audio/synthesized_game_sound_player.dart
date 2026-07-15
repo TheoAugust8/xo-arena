@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 
 final class SynthesizedGameSoundPlayer implements GameSoundPlayer {
   final _players = <GameSoundCue, AudioPlayer>{};
@@ -39,7 +39,7 @@ final class SynthesizedGameSoundPlayer implements GameSoundPlayer {
 
   void _discardFailedPreparation(GameSoundCue cue, Future<void> preparation) {
     if (identical(_preparation[cue], preparation)) {
-      _preparation.remove(cue);
+      unawaited(_preparation.remove(cue));
     }
   }
 

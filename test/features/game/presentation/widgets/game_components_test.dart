@@ -5,6 +5,7 @@ import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_score.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_status_badge.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
@@ -14,6 +15,8 @@ import 'package:xo_arena/shared/settings/presentation/widgets/settings_sheet.dar
 void main() {
   Widget themed(Widget child, {ThemeData? theme}) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: theme ?? AppTheme.dark,
       home: Scaffold(body: Center(child: child)),
     );
@@ -99,7 +102,8 @@ void main() {
     for (final variant in GameStatusVariant.values) {
       await tester.pumpWidget(themed(GameStatusBadge(variant: variant)));
       await tester.pump(const Duration(milliseconds: 250));
-      expect(find.text(variant.label), findsOneWidget);
+      final context = tester.element(find.byType(GameStatusBadge));
+      expect(find.text(variant.label(context.l10n)), findsOneWidget);
     }
 
     await tester.pumpWidget(
@@ -365,6 +369,8 @@ void main() {
   testWidgets('offers six symbol skins', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
@@ -420,6 +426,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
@@ -472,6 +480,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
@@ -505,6 +515,8 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: Scaffold(
           body: SettingsSheet(
@@ -538,6 +550,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: AppTheme.dark,
         home: const MediaQuery(
           data: MediaQueryData(

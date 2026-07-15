@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 
 class AppLogo extends StatelessWidget {
   const AppLogo({this.size = 72, this.drawProgress = 1, super.key});
@@ -15,7 +16,7 @@ class AppLogo extends StatelessWidget {
     final tokens = context.appTokens;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Semantics(
-      label: 'XO Arena logo',
+      label: context.l10n.appLogoSemantics,
       image: true,
       child: ExcludeSemantics(
         child: CustomPaint(

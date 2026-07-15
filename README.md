@@ -28,8 +28,8 @@
     <img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter&amp;logoColor=white" alt="Flutter 3.44" />
     <img src="https://img.shields.io/badge/Riverpod-3-D92B35" alt="Riverpod 3" />
     <img src="https://img.shields.io/badge/Firebase-Hosting-FFCA28?logo=firebase&amp;logoColor=black" alt="Firebase Hosting" />
-    <a href="https://github.com/TheoAugust8/xo-arena/actions/workflows/quality.yml">
-      <img src="https://github.com/TheoAugust8/xo-arena/actions/workflows/quality.yml/badge.svg?branch=main" alt="Quality status" />
+    <a href="https://github.com/TheoAugust8/xo-arena/actions/workflows/deploy-web.yml">
+      <img src="https://github.com/TheoAugust8/xo-arena/actions/workflows/deploy-web.yml/badge.svg?branch=main" alt="Quality and deploy status" />
     </a>
   </p>
 </div>
@@ -57,12 +57,13 @@ XO Arena favors clear domain rules, pragmatic Clean Architecture, deterministic 
   </tr>
 </table>
 
-## Product scope
+## Features
 
-Core target:
+XO Arena includes:
 
 * Responsive 3 by 3 board.
 * Human versus CPU play.
+* Easy, Medium, and Hard CPU levels. Hard uses Minimax with a controlled 10% chance of strategic imperfection.
 * Explicit active game, win, and draw states.
 * Restart support.
 * Locked interaction while CPU is choosing a move.
@@ -75,8 +76,6 @@ Core target:
 * Synthesized gameplay sound cues with a persisted mute control.
 * Branded native startup, animated launch sequence, and platform icons.
 * Stable visual regression baselines for key screens and symbol skins.
-
-The product keeps its experience focused on a single game flow. It does not currently include first player selection, haptics, or online play.
 
 ## Prerequisites
 
@@ -111,8 +110,10 @@ Production runs on Firebase Hosting:
 
 **[xo-arena-web-20260714.web.app](https://xo-arena-web-20260714.web.app)**
 
-GitHub Actions builds every pull request to `main` and posts a Firebase preview
-URL. A push to `main` deploys production.
+One GitHub Actions workflow checks formatting, analysis, coverage, integration
+flows, and web release builds. Pull requests to `main` receive a Firebase
+preview only after the quality gate succeeds. Pushes to `main` deploy the same
+verified build artifact to production.
 
 Before first deployment, configure these GitHub repository values:
 
@@ -147,19 +148,22 @@ game cells, status badges, score, symbol skins, and settings variants.
 make get              # Fetch Dart and Flutter dependencies through FVM
 make run              # Run XO Arena
 make widgetbook       # Run the interactive design system catalog
+make sounds           # Regenerate bundled gameplay sound assets
 make format           # Format Dart files
 make format-check     # Check Dart formatting
 make analyze          # Run static analysis
 make test             # Run test suite
+make coverage         # Enforce handwritten line and branch coverage
+make integration-test DEVICE=macos # Run complete application flows
 make goldens          # Run visual regression tests
 make update-goldens   # Update inspected visual regression baselines
-make generate         # Generate Riverpod, Freezed, and JSON sources
+make generate         # Generate localization, Riverpod, Freezed, and JSON sources
 make generate-watch   # Watch declarations and regenerate sources
 make check            # Generate, check formatting, analyze, and test
 make clean            # Clean Flutter outputs and restore dependencies
 ```
 
-Run `make generate` after changing Riverpod annotations, Freezed models, or JSON serialization declarations. Generated `*.g.dart` and `*.freezed.dart` files are intentionally ignored by Git.
+Run `make generate` after changing ARB translations, Riverpod annotations, Freezed models, or JSON serialization declarations. Generated localization, `*.g.dart`, and `*.freezed.dart` files are intentionally ignored by Git.
 
 ## Technical stack
 
@@ -170,6 +174,7 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 | State management and DI | Riverpod 3 with code generation |
 | Navigation | GoRouter |
 | Immutable models | Freezed |
+| Localization | Flutter gen_l10n with ARB sources |
 | Local persistence | SharedPreferences |
 | Sound playback | audioplayers |
 | Tests | flutter_test and manual fakes |
@@ -182,13 +187,15 @@ Run `make generate` after changing Riverpod annotations, Freezed models, or JSON
 Project uses pragmatic Clean Architecture with feature first organization.
 
 ```text
-Presentation -> Domain <- Data
+Presentation -> Use cases -> Domain contracts <- Data
+Presentation -> Application ports <- Data
 App composition -> Presentation + Domain + Data
 ```
 
 Dependency rules:
 
 * Domain stays independent from Flutter, Riverpod, GoRouter, and SharedPreferences.
+* Application ports define feature capabilities that are not domain rules, such as gameplay audio.
 * Repository contracts and business use cases live in Domain.
 * Domain sources are grouped by responsibility into entities, repositories, services, and use cases where business rules require them.
 * Presentation depends on domain concepts, useful use cases, and public providers.
@@ -207,16 +214,20 @@ lib/
   app/
     app.dart                   Application root
     di/                        Concrete dependency composition
+    observers/                 Debug state observation
     router.dart                Home, Game, and History routes
   core/
+    constants/                 Route, storage, and application constants
     design_system/             Tokens, themes, and reusable components
   features/
     home/
       presentation/            Home screen
     game/
+      application/
+        ports/                 Gameplay audio contract
       domain/
         entities/              Immutable Board and Game aggregate
-        services/              Pure rules, CPU strategies, and audio port
+        services/              Pure rules and CPU strategies
         usecases/              Completed game persistence
       data/
         audio/                 Audioplayers implementation
@@ -228,6 +239,14 @@ lib/
   shared/
     game_configuration/
       domain/entities/         Shared difficulty type
+    game_records/
+      domain/
+        entities/              Records and statistics
+        repositories/          Game record repository contract
+      data/
+        models/                JSON DTO and domain mapping
+        datasources/           SharedPreferences access
+        repositories/          Repository implementation
     game_symbols/
       domain/entities/         Shared symbol skin type
       presentation/            Shared symbol rendering
@@ -240,16 +259,12 @@ lib/
         datasources/           SharedPreferences access
         repositories/          Settings repository implementation
       presentation/            Riverpod state and shared settings UI
-    game_records/
-      domain/
-        entities/              Records and statistics
-        repositories/          Game record repository contract
-      data/
-        models/                JSON DTO and domain mapping
-        datasources/           SharedPreferences access
-        repositories/          Repository implementation
+  l10n/
+    app_en.arb                 English application copy
+    l10n.dart                  Localization access and exports
 tool/
-  game_sound_synthesizer.dart  Development asset generator
+  generate_game_sounds.dart    Sound asset generation entry point
+  game_sound_synthesizer.dart  Pure PCM WAV synthesizer
 test/
   architecture/                Enforced dependency rules
   features/                    Feature domain, data, and widget tests
@@ -261,7 +276,7 @@ test/
 
 ## State management
 
-[Riverpod](https://riverpod.dev/) manages dependency composition and asynchronous History state.
+[Riverpod](https://riverpod.dev/) manages dependency composition plus Game, History, and Settings state.
 
 `gameRecordsProvider` loads persisted records for Home statistics and History. After delete or clear operations, History invalidates provider so current local state is loaded again. Mutation controls remain disabled while an operation is pending.
 
@@ -269,15 +284,17 @@ test/
 
 The game notifier owns turn orchestration, CPU waiting state, stale asynchronous result protection, completed game persistence, and restart behavior. The immutable `Game` aggregate owns the board, current player, player to symbol mapping, status, winner, and winning indexes. `Board`, win rules, and CPU algorithms stay pure and independent from Riverpod.
 
+Debug builds register `AppStateObserver` at the root `ProviderScope`. It logs provider additions, updates, and failures while release builds pay no logging cost. The observer uses Riverpod's native observation boundary and accepts an injectable sink for focused tests.
+
 ## Persistence
 
-`GameRecord` is a pure immutable Freezed domain model. `GameRecordDto` lives in Data and owns JSON conversion plus mapping to and from Domain. Records capture difficulty and symbol style snapshots while preserving the existing stored keys, enum names, and ISO 8601 dates.
+`GameRecord` is an explicit immutable domain value. Its controlled constructor and `copyWith` enforce nonblank identities plus the valid completed match move range. `GameRecordDto` lives in Data and owns wire format parsing plus mapping to and from Domain. Records capture difficulty and symbol style snapshots while preserving the existing stored keys, enum names, and ISO 8601 dates.
 
 `AppSettingsDto` applies the same generated JSON boundary to settings while `AppSettings` remains a storage independent domain value.
 
 `GameRecordRepository` belongs to domain. `GameRecordRepositoryImpl` delegates to `GameRecordLocalDataSource`, while `SharedPreferencesGameRecordLocalDataSource` owns storage format and local mutations.
 
-Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles. Invalid records are skipped individually, while a globally invalid payload returns an empty history. Failed writes remain visible as storage errors and do not block the next queued mutation.
+Local data source serializes write operations and makes reads wait for pending mutations. Concurrent save, delete, and clear calls cannot overwrite each other or expose a stale snapshot through overlapping read and write cycles. Storage retains the 100 newest completed matches. History renders records lazily and caps reveal motion at 420 milliseconds. Invalid records are skipped individually, while a globally invalid payload returns an empty history. Failed writes remain visible as storage errors and do not block the next queued mutation.
 
 ## Navigation
 
@@ -291,15 +308,23 @@ Local data source serializes write operations and makes reads wait for pending m
 
 Three explicit destinations keep navigation simple while allowing each flow to evolve independently.
 
+Route paths live in `AppRoutes`, keeping navigation calls and router declarations aligned without scattering string literals.
+
 Routes use short fade and slide transitions. Flutter's reduced motion signal disables movement while preserving immediate navigation and state changes. Leaving Game disposes its auto dispose notifier, cancels pending CPU work, and ensures the next Game entry starts a fresh session.
 
 ## Sound design
 
-Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game domain owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool`. Domain rules and controller orchestration remain independent from audio playback details.
+Gameplay uses five short cues: Human placement, CPU placement, win, loss, and draw. Move cues use slightly longer envelopes to reduce the risk of being lost to mobile browser startup latency while staying unobtrusive. The project synthesizes its own PCM WAV files into bundled assets, so it carries no external audio samples or licensing burden. Asset playback avoids platform specific byte source behavior. Game application owns the playback port, Game data implements it with audioplayers, and Game presentation maps state transitions to cues. Asset synthesis stays in `tool` and `make sounds` reproduces every bundled cue. Domain rules and controller orchestration remain independent from audio playback details.
 
 Sound is enabled by default and can be muted from Settings. The choice persists with other game preferences. iOS playback uses the ambient audio category, respecting the Ring and Silent switch and mixing without interrupting other audio.
 
-The platform launch screens use the active light or dark brand background to avoid a white frame while Flutter initializes. Flutter then shows the rounded badge, sequential X and O drawing, title reveal, tagline, and progress indicator. Reduced motion skips the sequence and exposes Home immediately. The same deterministic logo geometry produces the iOS, Android, macOS, and Web icons.
+## Localization
+
+User facing copy lives in ARB sources under `lib/l10n`. Flutter generates typed localization accessors consumed through `context.l10n`, so widgets do not own translation strings. English is the current supported locale. A new locale requires an additional ARB file and translated values, without changing presentation structure.
+
+## Launch experience
+
+The platform launch screens use the active light or dark brand background to avoid a white frame while Flutter initializes. Flutter then shows a compact rounded badge, sequential X and O drawing, title reveal, tagline, and progress indicator. Application content appears within two seconds. Reduced motion skips the sequence and exposes Home immediately. The same deterministic logo geometry produces the iOS, Android, macOS, and Web icons.
 
 ## Testing strategy
 
@@ -311,15 +336,20 @@ Current tests cover:
 * History loading, empty state, delete, clear, and mutation locking.
 * History summaries, metadata, retry, and mutation failure feedback.
 * History repository integration and reentrant mutation protection.
+* Lazy long history rendering, bounded reveal motion, and 100 record retention.
 * GameRecord equality and copying plus GameRecordDto wire compatibility.
+* GameRecord constructor and copy invariants in Domain.
 * Targeted record corruption, SharedPreferences write failures, serialization, and queue recovery.
 * Completed game persistence use case.
 * Preference defaults, generated JSON mapping, restoration, corruption fallback, no op updates, and ordered writes.
-* Sound synthesis, transition cue mapping, mute persistence, and Game integration.
+* Sound synthesis, minimum move cue duration, transition cue mapping, mute persistence, and Game integration.
+* Sealed game evaluation variants and exhaustive result state compatibility.
+* Debug state observation for provider additions and updates.
 * Game record metadata validation and shared statistics.
 * Launch timing, reduced motion behavior, and launch semantics.
 * Architecture dependency rules between App, Core, Presentation, Domain, and Data.
-* Five visual regression baselines covering Home, Game, History, Settings, and every symbol skin.
+* Six visual regression baselines covering Home, initial and completed Game, History, Settings, and every symbol skin.
+* Complete application flows covering a persisted match and settings restoration.
 
 Game coverage:
 
@@ -330,6 +360,8 @@ Game coverage:
 * Valid and invalid moves.
 * No move after completion.
 * Immediate CPU win and Human win block.
+* Controlled Hard imperfection threshold, protected tactical moves, and a reachable Human win.
+* Perfect Minimax fallback when imperfections are disabled.
 * CPU never choosing occupied cell.
 * Deterministic choice when scores tie.
 * Interaction lock during CPU work.
@@ -343,6 +375,12 @@ Run full local quality gate with:
 ```sh
 make check
 ```
+
+`make coverage` excludes generated Dart and generated localization sources,
+then requires at least 90% line coverage and 85% branch coverage. Run device
+flows separately with `make integration-test DEVICE=macos`, replacing `macos`
+with another configured Flutter device when needed. GitHub Actions runs these
+flows on Linux under Xvfb.
 
 ## Technical decisions
 
@@ -368,17 +406,17 @@ Home selects difficulty, Game consumes it, and History displays completed match 
 
 TweenAnimationBuilder, AnimatedSwitcher, route transitions, and modal overlays cover current motion needs. This keeps motion short, testable, dependency free, and compatible with reduced motion settings.
 
-### Why Freezed is used for value state
+### Why Freezed is used for value state and unions
 
-GameRecord and GameRecordStats benefit from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. Board and Game stay small explicit value types with defensive collection copying and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
+GameRecordStats benefits from generated equality and copying while JSON stays in the Data DTO. GameState uses generated value equality. `GameEvaluation` is a sealed Freezed union, making active, won, and draw results explicit and exhaustively matchable without impossible flag combinations. GameRecord, Board, and Game stay explicit value types because their constructors enforce invariants and controlled transitions. Simple types remain plain Dart when generation adds no clear value.
 
-### Why deterministic Minimax is target CPU strategy
+### Why Hard uses controlled Minimax imperfection
 
-Minimax fits 3 by 3 search space, has predictable behavior, and can be tested without Flutter. Depth aware scoring can favor faster wins and slower unavoidable losses. Stable move ordering keeps results reproducible.
+Minimax fits the 3 by 3 search space and can be tested without Flutter. Hard evaluates every valid move with depth aware scoring. On strategic turns where a lower scoring move exists, it has a 10% chance of choosing one. Immediate CPU wins and immediate Human threats remain protected. This keeps Hard strong while leaving a legitimate path to victory. Injected randomness and a configurable imperfection rate keep domain tests reproducible.
 
 ### Why no Flutter Hooks
 
-Current lifecycle needs do not justify extra dependency. Standard Flutter and Riverpod APIs remain sufficient. Hooks can be reconsidered when reusable widget lifecycle logic appears.
+Lifecycle needs do not justify extra dependency. Standard Flutter and Riverpod APIs remain sufficient.
 
 ## Contributing
 

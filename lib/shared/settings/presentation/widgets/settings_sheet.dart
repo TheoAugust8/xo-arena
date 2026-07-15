@@ -3,8 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'package:xo_arena/core/design_system/app_fonts.dart';
 import 'package:xo_arena/core/design_system/app_spacing.dart';
 import 'package:xo_arena/core/design_system/app_theme_tokens.dart';
+import 'package:xo_arena/l10n/l10n.dart';
 import 'package:xo_arena/shared/game_configuration/domain/entities/game_difficulty.dart';
 import 'package:xo_arena/shared/game_symbols/domain/entities/game_symbol_skin.dart';
 import 'package:xo_arena/shared/game_symbols/presentation/game_symbol.dart';
@@ -24,7 +26,7 @@ Future<void> showSettingsOverlay({
   return showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
-    barrierLabel: 'Close settings',
+    barrierLabel: context.l10n.closeSettings,
     barrierColor: Colors.transparent,
     transitionDuration: disableAnimations
         ? Duration.zero
@@ -59,7 +61,7 @@ class _SettingsOverlay extends StatelessWidget {
         children: [
           Semantics(
             button: true,
-            label: 'Close settings',
+            label: context.l10n.closeSettings,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => Navigator.of(context).maybePop(),
@@ -145,9 +147,9 @@ class SettingsSheet extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Settings',
+                          context.l10n.settings,
                           style: TextStyle(
-                            fontFamily: 'Barlow Condensed',
+                            fontFamily: AppFonts.display,
                             fontSize: 22,
                             height: 1,
                             fontWeight: FontWeight.w900,
@@ -165,20 +167,20 @@ class SettingsSheet extends StatelessWidget {
                     ],
                   ),
                   const Divider(height: AppSpacing.space24),
-                  const _SectionLabel('APPEARANCE'),
+                  _SectionLabel(context.l10n.appearance),
                   _ThemeToggle(
                     theme: settings.theme,
                     onThemeChanged: onThemeChanged,
                   ),
                   const Divider(height: AppSpacing.space24),
-                  const _SectionLabel('DIFFICULTY'),
+                  _SectionLabel(context.l10n.difficulty),
                   _DifficultyRail(
                     selected: settings.difficulty,
                     onChanged: onDifficultyChanged,
                   ),
                   const SizedBox(height: AppSpacing.space8),
                   Text(
-                    settings.difficulty.description,
+                    settings.difficulty.description(context.l10n),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: context.appTokens.mutedForeground,
                       fontSize: 11,
@@ -186,7 +188,7 @@ class SettingsSheet extends StatelessWidget {
                     ),
                   ),
                   const Divider(height: AppSpacing.space24),
-                  const _SectionLabel('SYMBOL SKIN'),
+                  _SectionLabel(context.l10n.symbolSkin),
                   GridView.count(
                     padding: EdgeInsets.zero,
                     primary: false,

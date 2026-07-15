@@ -72,7 +72,7 @@ void main() {
         skin: GameSymbolSkin.basketball,
       );
 
-      expect(() => dto.toDomain(), throwsA(isA<FormatException>()));
+      expect(dto.toDomain, throwsA(isA<ArgumentError>()));
     });
   }
 }

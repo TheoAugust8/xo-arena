@@ -1,12 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+// _TestAppScope owns the root ProviderScope for each widget test.
+// ignore_for_file: riverpod_lint/scoped_providers_should_specify_dependencies
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:xo_arena/app/app.dart';
 import 'package:xo_arena/app/router.dart';
-import 'package:xo_arena/features/game/domain/services/game_sound_player.dart';
+import 'package:xo_arena/features/game/application/ports/game_sound_player.dart';
 import 'package:xo_arena/features/game/presentation/providers/game_sound_provider.dart';
 import 'package:xo_arena/features/game/presentation/widgets/game_cell.dart';
+import 'package:xo_arena/features/launch/presentation/startup_launch.dart';
 import 'package:xo_arena/shared/game_records/presentation/game_record_providers.dart';
 import 'package:xo_arena/shared/settings/domain/entities/app_settings.dart';
 import 'package:xo_arena/shared/settings/domain/repositories/settings_repository.dart';
@@ -23,7 +26,7 @@ void main() {
     expect(find.text('ARENA'), findsOneWidget);
     expect(find.text('PLAY NOW'), findsNothing);
 
-    await tester.pump(const Duration(milliseconds: 2900));
+    await tester.pump(launchDuration);
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('startup_launch')), findsNothing);
